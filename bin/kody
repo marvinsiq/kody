@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+
+require 'kody'
+require 'thor'
+
+#include Thor::Actions
+
+class KodyRunner < Thor
+
+	desc 'c [OPTIONS]', "Creates a new project."
+	method_option :project_type, :type => :string, :required => true, :default => "demoiselle", :aliases => '-t', :banner => "The type of your project."
+	method_option :framework_version, :type => :string, :required => false, :default => "2.3.4", :aliases => '-v', :banner => "The version of framework."
+	method_option :project_name, :type => :string, :required => true, :aliases => '-n', :banner => "The name of your project."
+	method_option :project_group, :type => :string, :required => true, :aliases => '-g', :banner => "The group name of your project."
+	def c
+		begin
+			@kody = Kody.new
+			@kody.create_project(options)
+		rescue Exception => e 
+			App.logger.error e.message
+			puts e.backtrace.join("\n")
+		end		
+	end
+
+    desc 'g [MODEL]', "Generates code from the model."
+    method_option :model, :type => :string, :required => true, :aliases => '-m', :banner => "Model path."
+    def g
+    	begin
+			kody = Kody.new
+			kody.from_xmi_file(options[:model])
+			kody.generate
+		rescue Exception => e 
+			App.logger.error e.message
+			puts e.backtrace.join("\n")
+		end
+	end
+
+end
+
+KodyRunner.start
