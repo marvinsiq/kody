@@ -25,7 +25,13 @@ class App
 
 		@@spec = Gem::Specification.new do |s|
 		  s.name        = 'kody'
-		  s.version     = '0.0.1'
+		  s.version     = '0.0.2'
+		  s.licenses    = ['LGPL']
+		  s.add_runtime_dependency "thor", '~> 0.18', '>= 0.18.1'
+		  s.add_runtime_dependency "rake", '~> 0.9', '>= 0.9.2'
+		  s.add_runtime_dependency "nokogiri", '~> 1.6', '>= 1.6.0'
+		  s.add_runtime_dependency "liquid", '~> 2.5', '>= 2.5.0'
+		  s.add_runtime_dependency "xmimodel", '~> 0.2', '>= 0.2.0'
 		  s.date        = '2014-06-02'
 		  s.summary     = "Kody"
 		  s.description = "A quick code generator."
