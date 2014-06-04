@@ -14,7 +14,7 @@ class App
 		@@log = Logger.new($stdout)
 		@@log.level = Logger::DEBUG
 		@@log.formatter = proc do |severity, datetime, progname, msg|
-		  "[#{severity}] - #{msg}\n"
+		  "[#{severity}] #{msg}\n"
 		end
 		@@log
 	end

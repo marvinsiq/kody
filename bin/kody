@@ -9,8 +9,8 @@ require 'thor'
 class KodyRunner < Thor
 
 	desc 'c [OPTIONS]', "Creates a new project."
-	method_option :project_type, :type => :string, :required => true, :default => "demoiselle", :aliases => '-t', :banner => "The type of your project."
-	method_option :framework_version, :type => :string, :required => false, :default => "2.3.4", :aliases => '-v', :banner => "The version of framework."
+	method_option :project_type, :type => :string, :required => true, :default => "demoiselle-jsf-jpa", :aliases => '-t', :banner => "The type of your project."
+	method_option :framework_version, :type => :string, :required => false, :default => "2.4.0", :aliases => '-v', :banner => "The version of framework."
 	method_option :project_name, :type => :string, :required => true, :aliases => '-n', :banner => "The name of your project."
 	method_option :project_group, :type => :string, :required => true, :aliases => '-g', :banner => "The group name of your project."
 	def c
@@ -34,6 +34,12 @@ class KodyRunner < Thor
 			App.logger.error e.message
 			puts e.backtrace.join("\n")
 		end
+	end
+
+	desc 'l', "List all types of projects"
+	def l
+		puts 'demoiselle-minimal'
+		puts 'demoiselle-jsf-jpa'
 	end
 
 end

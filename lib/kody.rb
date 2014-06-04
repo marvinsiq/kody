@@ -16,22 +16,23 @@ class Kody
 		@model = Model.new file
 	end
 
-	def engine(type)
+	def engine(type, version)
 
 		case type 
-		when "demoiselle"
+		when "demoiselle-minimal"
+		when "demoiselle-jsf-jpa"
 			@engine = Demoiselle.new(@model, @properties)
 			@engine.output = Dir.pwd		
 		else
 			raise "Engine '#{type}' not supported."
 		end
-		App.logger.info "Using the engine '#{@engine.name}' version #{@engine.version}."
+		App.logger.info "Using the engine '#{@engine.name}' version #{version}."
 	end
 
 	def generate
 		
 		init_properties
-		engine @properties["project.type"]
+		engine(@properties["project.type"], @properties["framework.version"])
 		raise "You need define a engine." if @engine.nil?
 		
 		parser = Parser.new(@engine)
@@ -43,7 +44,7 @@ class Kody
 
 	def create_project(params)
 
-		engine(params[:project_type])
+		engine(params[:project_type], params[:framework_version])
 		@engine.create_project(params)
 
 		App.logger.info "#{Util.diff_time(@inicio)}"

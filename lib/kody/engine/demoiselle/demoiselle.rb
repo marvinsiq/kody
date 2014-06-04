@@ -11,7 +11,6 @@ class Demoiselle
 
 	attr_accessor :output
 	attr_accessor :model
-	attr_accessor :properties
 
 	def initialize(model=nil)
 		@output = Dir.pwd
@@ -19,19 +18,29 @@ class Demoiselle
 
 		@model = model
 		if !model.nil?
-			@properties = Properties.load(@output)
+			self.properties = Properties.load(@output)
 			initialize_builders			
 		end
 	end
 
-	def initialize(model, properties)
+	def initialize(model, _properties)
 		@output = Dir.pwd
 		@hash = Hash.new	
-		@properties = properties
+		self.properties = _properties
 		@model = model
 		if !model.nil?
 			initialize_builders			
 		end		
+	end
+
+	def properties=(properties)
+		@properties = properties
+		@project_files = "#{@output}/project/#{project_name}"
+		@properties
+	end
+
+	def properties
+		@properties
 	end
 
 	def name
@@ -39,7 +48,11 @@ class Demoiselle
 	end
 
 	def version
-		return "2.3.2"
+		return @properties["framework_version"]
+	end
+
+	def project_name
+		return @properties["project.name"]
 	end
 
 	# Cria um novo projeto
@@ -48,7 +61,6 @@ class Demoiselle
 		create_dirs(params)
 		create_properties_file(params)
 		create_maven_project(params)
-		#generate_pom_xml(params)
 
 		App.logger.info "Project #{params[:project_name]} created."		
 	end
@@ -59,17 +71,6 @@ class Demoiselle
 		generate_businnes
 		generate_persistence_xml
 	end
-
-	# Cria o arquivo de configuração do maven
-	def generate_pom_xml params
-		template = load_template("pom.xml.tpl")
-		path = output + "/" + params[:project_name] + "/" + params[:project_type] + "/"
-		file_name = "pom.xml"
-
-		rendered = template.render(
-			'project' => ProjectBuilder.new(params[:project_group], params[:project_name]))
-		save(rendered, path, file_name)		
-	end	
 
 	# Gera os Beans e os DAOs
 	def generate_domain
@@ -95,11 +96,11 @@ class Demoiselle
 	# Gera o arquivo de configuração do JPA
 	def generate_persistence_xml
 		template = load_template("persistence.xml.tpl")
-		path = output + "/src/main/resources/META-INF/"
+		path = "#{@project_files}/src/main/resources/META-INF/"
 		file_name = "persistence.xml"
 		rendered = template.render('classes' => @entities)
 		save(rendered, path, file_name)
-		path = output + "/src/test/resources/META-INF/"
+		path = "#{@project_files}/src/test/resources/META-INF/"
 		save(rendered, path, file_name)	
 	end	
 
@@ -189,7 +190,7 @@ class Demoiselle
 		end
 
 		@rendered = template.render(@hash)
-		path = output + "/src/main/java/" + clazz.package.gsub(".", "/") + "/"	
+		path = "#{@project_files}/src/main/java/" + clazz.package.gsub(".", "/") + "/"	
 		file_name = clazz.name + ".java"
 		save(@rendered, path, file_name)		
 	end	
@@ -201,7 +202,7 @@ class Demoiselle
 			
 			@rendered = template.render(@hash)
 
-			path = output + "/src/main/java/" + clazz.persistence_package.gsub(".", "/") + "/"	
+			path = "#{@project_files}/src/main/java/" + clazz.persistence_package.gsub(".", "/") + "/"	
 			file_name = clazz.name + "DAO.java"
 			save(@rendered, path, file_name)
 		end		
@@ -215,7 +216,7 @@ class Demoiselle
 			template = load_template("businnes.tpl")
 			@rendered = template.render(@hash)
 
-			path = output + "/src/main/java/" + clazz.business_package.gsub(".", "/") + "/"	
+			path = "#{@project_files}/src/main/java/" + clazz.business_package.gsub(".", "/") + "/"	
 			file_name = clazz.name + "BC.java"
 			save(@rendered, path, file_name)
 		end
@@ -225,14 +226,14 @@ class Demoiselle
 		template = load_template("view_mb_list.tpl")
 		@rendered = template.render(@hash)
 
-		path = output + "/src/main/java/" + clazz.view_package.gsub(".", "/") + "/"
+		path = "#{@project_files}/src/main/java/" + clazz.view_package.gsub(".", "/") + "/"
 		file_name = clazz.name + "ListMB.java"
 		save(@rendered, path, file_name)
 
 		template = load_template("view_mb_edit.tpl")
 		@rendered = template.render(@hash)
 
-		path = output + "/src/main/java/" + clazz.view_package.gsub(".", "/") + "/"
+		path = "#{@project_files}/src/main/java/" + clazz.view_package.gsub(".", "/") + "/"
 		file_name = clazz.name + "EditMB.java"
 		save(@rendered, path, file_name)
 	end	
@@ -242,14 +243,14 @@ class Demoiselle
 		@hash["managed_bean"] = clazz.name.lower_camel_case + "ListMB"
 		@rendered = template.render(@hash)
 
-		path = output + "/src/main/webapp/"
+		path = "#{@project_files}/src/main/webapp/"
 		file_name = clazz.name.underscore + "_list.xhtml"
 		save(@rendered, path, file_name)
 
 		template = load_template("view_edit.tpl")
 		@rendered = template.render(@hash)
 
-		path = output + "/src/main/webapp/"
+		path = "#{@project_files}/src/main/webapp/"
 		file_name = clazz.name.underscore + "_edit.xhtml"
 		save(@rendered, path, file_name)
 	end	
@@ -258,7 +259,7 @@ class Demoiselle
 		template = load_template("messages.tpl")
 		@rendered = template.render('classes' => classes)
 
-		path = output + "/src/main/resources/"
+		path = "#{@project_files}/src/main/resources/"
 		file_name = "messages2.properties"
 		
 		save(@rendered, path, file_name)		
@@ -303,11 +304,15 @@ class Demoiselle
 	def create_maven_project(params)
 		project_name = params[:project_name]
 		project_group = params[:project_group]
-		Dir.chdir("#{@output}/#{project_name}/project")
+		version = params[:framework_version]
+		artifact_id = params[:project_type]
+
+		@project_files = "#{@output}/#{project_name}/project"
+		Dir.chdir(@project_files)
 
 		command = "mvn archetype:generate -DgroupId=#{project_group} -DartifactId=#{project_name}"
 		command = "#{command} -DarchetypeGroupId=br.gov.frameworkdemoiselle.archetypes"
-		command = "#{command} -DarchetypeArtifactId=demoiselle-minimal"
+		command = "#{command} -DarchetypeArtifactId=#{artifact_id}"
 		command = "#{command} -DarchetypeVersion=#{version} -DinteractiveMode=false"
 		
 		App.logger.info "Criando projeto maven..."
@@ -315,6 +320,8 @@ class Demoiselle
 		if !$?.nil? && $?.exitstatus != 0
 			raise "Falha ao criar o projeto com maven.\n#{command}"
 		end
+
+		@project_files = @project_files + "/#{project_name}"
 	end	
 
 end
