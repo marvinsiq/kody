@@ -35,7 +35,9 @@ class Demoiselle
 
 	def properties=(properties)
 		@properties = properties
-		@project_files = "#{@output}/project/#{project_name}"
+		unless(@properties.nil?)
+			@project_files = "#{@output}/project/#{project_name}"
+		end
 		@properties
 	end
 
@@ -104,12 +106,12 @@ class Demoiselle
 		save(rendered, path, file_name)	
 	end	
 
-	public
 	def convert_type(type)
 		Datatype.java_type(type)
 	end
 
 	private
+
 	def initialize_builders
 		App.logger.info "Initializing builders..."
 
@@ -123,7 +125,6 @@ class Demoiselle
 		App.logger.info "Builders initialized"
 	end
 
-	private
 	def initialize_package(package)	
 		
 		#App.logger.debug "Package: #{package.name}"	
@@ -136,7 +137,8 @@ class Demoiselle
 		end
 	end	
 
-	private
+	##
+	# @param [Clazz, #read] clazz	
 	def initialize_class(clazz)
 		
 		#App.logger.debug "Class: #{clazz.name}"		
@@ -152,15 +154,15 @@ class Demoiselle
 		end		
 	end
 
-	private
-	def generate_class(clazz)
+	##
+	# @param [ClassBuilder, #read] class_builder
+	def generate_class(class_builder)
 	
-		@hash['class'] = clazz
-		generate_classes(clazz)
-		generate_dao(clazz)
+		@hash['class'] = class_builder
+		generate_classes(class_builder)
+		generate_dao(class_builder)
 	end
 
-	private
 	def load_template(template_name)
 		@templates = Hash.new if @templates.nil?
 		return @templates[template_name] if !(@templates[template_name]).nil?		
@@ -177,10 +179,9 @@ class Demoiselle
 		return template
 	end
 
-	private
-	def generate_classes(clazz)
+	def generate_classes(class_builder)
 
-		case clazz.stereotype
+		case class_builder.stereotype
 		when :entity			
 			template = load_template("entity.tpl")
 		when :enumeration
@@ -190,38 +191,38 @@ class Demoiselle
 		end
 
 		@rendered = template.render(@hash)
-		path = "#{@project_files}/src/main/java/" + clazz.package.gsub(".", "/") + "/"	
-		file_name = clazz.name + ".java"
+		path = "#{@project_files}/src/main/java/" + class_builder.package.gsub(".", "/") + "/"	
+		file_name = class_builder.name + ".java"
 		save(@rendered, path, file_name)		
 	end	
 
-	private
-	def generate_dao(clazz)
-		if clazz.stereotype == :entity
+	def generate_dao(class_builder)
+		if class_builder.stereotype == :entity
 			template = load_template("persistence.tpl")
 			
 			@rendered = template.render(@hash)
 
-			path = "#{@project_files}/src/main/java/" + clazz.persistence_package.gsub(".", "/") + "/"	
-			file_name = clazz.name + "DAO.java"
+			path = "#{@project_files}/src/main/java/" + class_builder.persistence_package.gsub(".", "/") + "/"	
+			file_name = class_builder.name + "DAO.java"
 			save(@rendered, path, file_name)
 		end		
 	end
 
-	def generate_bc(clazz)
-		if clazz.stereotype == :entity
+	def generate_bc(class_builder)
+		if class_builder.stereotype == :entity
 			
-			@hash['class'] = clazz
+			@hash['class'] = class_builder
 
 			template = load_template("businnes.tpl")
 			@rendered = template.render(@hash)
 
-			path = "#{@project_files}/src/main/java/" + clazz.business_package.gsub(".", "/") + "/"	
-			file_name = clazz.name + "BC.java"
+			path = "#{@project_files}/src/main/java/" + class_builder.business_package.gsub(".", "/") + "/"	
+			file_name = class_builder.name + "BC.java"
 			save(@rendered, path, file_name)
 		end
 	end
 
+=begin
 	def generate_view
 		template = load_template("view_mb_list.tpl")
 		@rendered = template.render(@hash)
@@ -264,9 +265,8 @@ class Demoiselle
 		
 		save(@rendered, path, file_name)		
 	end
+=end
 
-	private
-	
 	def save(content, path, file_name)	
 		FileUtils.mkdir_p(path) unless File.exists?(path)
 		
