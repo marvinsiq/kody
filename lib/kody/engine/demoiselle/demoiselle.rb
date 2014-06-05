@@ -310,7 +310,7 @@ class Demoiselle
 		@project_files = "#{@output}/#{project_name}/project"
 		Dir.chdir(@project_files)
 
-		command = "mvn archetype:generate -DgroupId=#{project_group} -DartifactId=#{project_name}"
+		command = "mvn archetype:generate -DgroupId=#{project_group}.#{project_name} -DartifactId=#{project_name}"
 		command = "#{command} -DarchetypeGroupId=br.gov.frameworkdemoiselle.archetypes"
 		command = "#{command} -DarchetypeArtifactId=#{artifact_id}"
 		command = "#{command} -DarchetypeVersion=#{version} -DinteractiveMode=false"
