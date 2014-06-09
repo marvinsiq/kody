@@ -46,7 +46,7 @@ class Demoiselle
 	end
 
 	def name
-		return "Demoiselle"
+		return "Java Demoiselle"
 	end
 
 	def version
@@ -59,6 +59,8 @@ class Demoiselle
 
 	# Cria um novo projeto
 	def create_project(params)
+
+		#TODO: validar se o projeto existe
 
 		create_dirs(params)
 		create_properties_file(params)
@@ -280,7 +282,7 @@ class Demoiselle
 	def create_dirs(params)
 		path = "#{@output}/#{params[:project_name]}"		
 		FileUtils.mkdir_p(path)		
-		FileUtils.mkdir_p("#{path}/mda")
+		FileUtils.mkdir_p("#{path}/dataModel")
 		FileUtils.mkdir_p("#{path}/templates")
 		FileUtils.mkdir_p("#{path}/project")		
 	end
@@ -294,7 +296,7 @@ class Demoiselle
 
 		properties = Hash.new
 		params.each do |propertie, value|			
-			properties[propertie.gsub("_", ".")] = value
+			properties[propertie.to_s.gsub("_", ".")] = value
 		end
 		properties["project.persistence.package"] = "#{project_group}.#{project_name}.persistence"
 		properties["project.business.package"] = "#{project_group}.#{project_name}.business"		

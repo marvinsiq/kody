@@ -4,19 +4,67 @@
 require 'kody'
 require 'thor'
 
+require 'io/console'
+
 #include Thor::Actions
 
 class KodyRunner < Thor
 
 	desc 'c [OPTIONS]', "Creates a new project."
-	method_option :project_type, :type => :string, :required => true, :default => "demoiselle-jsf-jpa", :aliases => '-t', :banner => "The type of your project."
+	method_option :project_type, :type => :string, :required => false, :aliases => '-t', :banner => "The type of your project."
 	method_option :framework_version, :type => :string, :required => false, :default => "2.4.0", :aliases => '-v', :banner => "The version of framework."
-	method_option :project_name, :type => :string, :required => true, :aliases => '-n', :banner => "The name of your project."
-	method_option :project_group, :type => :string, :required => true, :aliases => '-g', :banner => "The group name of your project."
+	method_option :project_name, :type => :string, :required => false, :aliases => '-n', :banner => "The name of your project."
+	method_option :project_group, :type => :string, :required => false, :aliases => '-g', :banner => "The group name of your project."
 	def c
 		begin
+
+			opt = Hash.new			
+			if options[:project_name].nil?
+				print "Choose the type of project:\n"
+				print "\t1: Java (demoiselle-minimal)\n"
+				print "\t2: Java (demoiselle-jsf-jpa)\n"
+				print "Default is 2\n"
+
+				begin
+					project_type = STDIN.gets.sub("\n","")
+					if project_type.empty?
+						opt[:project_type] = "demoiselle-jsf-jpa"
+					else					
+						case project_type
+						when "1"
+							opt[:project_type] = "demoiselle-minimal"
+						when "2"
+							opt[:project_type] = "demoiselle-jsf-jpa"						
+						else
+							print "Invalid option.\n"
+							print "Choose a valid type: "
+						end					
+					end
+				end while project_type != "1" &&  project_type != "2"
+			else
+				opt[:project_type] = options[:project_type]
+			end
+
+			if options[:project_name].nil?
+				print "Project Name: "
+				opt[:project_name] = STDIN.gets.sub("\n","")
+			else
+				opt[:project_name] = options[:project_name]
+			end
+
+			if options[:project_group].nil?
+				print "Project Group: "
+				opt[:project_group] = STDIN.gets.sub("\n","")
+			else
+				opt[:project_group] = options[:project_group]				
+			end
+
+			opt[:framework_version] = options[:framework_version]
+
+			print "\n"
+
 			@kody = Kody.new
-			@kody.create_project(options)
+			@kody.create_project(opt)
 		rescue Exception => e 
 			App.logger.error e.message
 			puts e.backtrace.join("\n")
