@@ -5,9 +5,10 @@ require 'kody/string'
 require 'kody/properties'
 require 'kody/builder/class_builder'
 require 'kody/builder/project_builder'
+require 'kody/engine/engine'
 require 'kody/engine/demoiselle/datatype'
 
-class Demoiselle
+class Demoiselle < Engine
 
 	attr_accessor :output
 	attr_accessor :model
@@ -96,16 +97,56 @@ class Demoiselle
 			generate_bc(e)
 		end		
 	end
+	
+	def process_template(template, partial_template, file_name)
+		
+		# Verifica se arquivo existe		
+		if File.exist?(file_name)
+				
+			file_content = File.read(file_name)
+			search = "<!-- <PartialkodyGen> -->"
+			search2 = "<!-- </PartialkodyGen> -->"
+			index = file_content.index(search)
+
+			template = load_template(partial_template)
+			rendered = template.render('classes' => @entities)
+
+			if index.nil?
+				App.logger.debug "File existes. Insert tag <PartialkodyGen> to generate parts"
+				return
+			else
+
+				index2 = file_content.index(search2)				 
+				if index2.nil?
+					index2 = index
+					search2 = search
+				else
+					index2 = index2 - search2.size
+				end
+
+				rendered = file_content[0, index + search.size] + 
+				"\n\n#{rendered}" + file_content[index2 + search2.size, file_content.size]
+			end			
+		else
+			template = load_template(template)
+			rendered = template.render('classes' => @entities)
+		end
+		save(rendered, file_name)		
+	end	
 
 	# Gera o arquivo de configuração do JPA
 	def generate_persistence_xml
-		template = load_template("persistence.xml.tpl")
+
 		path = "#{@project_files}/src/main/resources/META-INF/"
 		file_name = "persistence.xml"
-		rendered = template.render('classes' => @entities)
-		save(rendered, path, file_name)
+
+		full_file_name = "#{path}#{file_name}"
+		process_template("persistence.xml.tpl", "persistence.xml.partial.tpl", full_file_name)
+
 		path = "#{@project_files}/src/test/resources/META-INF/"
-		save(rendered, path, file_name)	
+		
+		full_file_name = "#{path}#{file_name}"
+		process_template("persistence_test.xml.tpl","persistence.xml.partial.tpl", full_file_name)		
 	end	
 
 	def convert_type(type)
@@ -139,22 +180,6 @@ class Demoiselle
 		end
 	end	
 
-	##
-	# @param [Clazz, #read] clazz	
-	def initialize_class(clazz)
-		
-		#App.logger.debug "Class: #{clazz.name}"		
-		class_builder = ClassBuilder.new(clazz, self)
-
-		case class_builder.stereotype
-		when :entity
-			@entities << class_builder
-		when :enumeration
-			@enumerations << class_builder
-		else
-			return
-		end		
-	end
 
 	##
 	# @param [ClassBuilder, #read] class_builder
@@ -163,22 +188,6 @@ class Demoiselle
 		@hash['class'] = class_builder
 		generate_classes(class_builder)
 		generate_dao(class_builder)
-	end
-
-	def load_template(template_name)
-		@templates = Hash.new if @templates.nil?
-		return @templates[template_name] if !(@templates[template_name]).nil?		
-
-		full_template_name = File.expand_path File.dirname(__FILE__) + "/templates/" + template_name
-		arquivo_template = File.read(full_template_name)
-		template = Liquid::Template.parse(arquivo_template)
-		Liquid::Template.register_filter(TextFilter)
-
-		@templates[template_name] = template
-
-		App.logger.info "Template '#{template_name}' loaded..."
-
-		return template
 	end
 
 	def generate_classes(class_builder)
@@ -193,7 +202,7 @@ class Demoiselle
 		end
 
 		@rendered = template.render(@hash)
-		path = "#{@project_files}/src/main/java/" + class_builder.package.gsub(".", "/") + "/"	
+		path = "#{@project_files}/src/main/java/" + class_builder.package.gsub(".", "/") + "/"
 		file_name = class_builder.name + ".java"
 		save(@rendered, path, file_name)		
 	end	
@@ -268,16 +277,6 @@ class Demoiselle
 		save(@rendered, path, file_name)		
 	end
 =end
-
-	def save(content, path, file_name)	
-		FileUtils.mkdir_p(path) unless File.exists?(path)
-		
-		file = File.new("#{path}#{file_name}", "w")
-		file.write(content)
-		file.close
-
-		App.logger.debug "Template saved in #{path}#{file_name}"
-	end
 
 	def create_dirs(params)
 		path = "#{@output}/#{params[:project_name]}"		

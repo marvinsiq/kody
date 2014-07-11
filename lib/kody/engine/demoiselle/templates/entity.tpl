@@ -1,4 +1,4 @@
-package {{class.package}};
+{%if class.stereotype == "entity" %}package {{class.package}};
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -59,4 +59,4 @@ public class {{class.name}}{% if class.extends != null %} extends {{class.extend
 		return this.{{ass.name}};
 	}
 	{% endfor %}	
-}
+}{% endif %}

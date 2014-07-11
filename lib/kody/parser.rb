@@ -10,4 +10,8 @@ class Parser
 		@engine.generate				
 	end
 
+	def generate_template(template_path, output)
+		@engine.generate_template(template_path, output)			
+	end	
+
 end

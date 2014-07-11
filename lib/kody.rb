@@ -3,6 +3,7 @@ require File.join(File.dirname(__FILE__), 'kody/model.rb')
 require File.join(File.dirname(__FILE__), 'kody/parser.rb')
 require File.join(File.dirname(__FILE__), 'kody/util.rb')
 require File.join(File.dirname(__FILE__), 'kody/engine/demoiselle/demoiselle.rb')
+require File.join(File.dirname(__FILE__), 'kody/engine/generic/generic_engine.rb')
 
 class Kody
 
@@ -48,6 +49,21 @@ class Kody
 		@engine.create_project(params)
 
 		App.logger.info "#{Util.diff_time(@inicio)}"
+	end
+
+	def generate2(model_file, template, classes, output)
+		
+		@model = Model.new model_file
+
+		@engine = GenericEngine.new(@model, @properties)
+		@engine.output = Dir.pwd
+		App.logger.info "Using the engine '#{@engine.name}' version #{@engine.version}."
+		
+		parser = Parser.new(@engine)
+		parser.generate_template(template, output)
+
+		App.logger.info "Done: #{Util.diff_time(@inicio)}"
+
 	end	
 
 	private

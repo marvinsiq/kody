@@ -1,4 +1,4 @@
-package {{class.package}};
+{%if class.stereotype == "enumeration" %}package {{class.package}};
 
 /**
  * {{class.name}}
@@ -25,4 +25,4 @@ public enum {{class.name}} {
     public {{class.name}} valueOf({{class.enum_type}} value) {
     	return super.valueOf({{class.name}}.class, value.toString());
     }{% endif %} 
-}
+}{% endif %}

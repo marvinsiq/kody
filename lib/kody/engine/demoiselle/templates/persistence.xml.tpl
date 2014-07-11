@@ -4,20 +4,16 @@
 
 	<persistence-unit name="bookmark-ds" transaction-type="RESOURCE_LOCAL">
 
-{% for entity in classes %}		<class>{{entity.package}}.{{entity.name}}</class>
-{% endfor %}
-	  <properties>	  
-			<property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
-			<property name="javax.persistence.jdbc.user" value="postgres" />
-			<property name="javax.persistence.jdbc.password" value="postgres" />
-			<property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/teste" />	  
-	  
-			<property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
-			<property name="hibernate.hbm2ddl.auto" value="validate"/>
-			<property name="hibernate.show_sql" value="true"/>
-			<property name="hibernate.format_sql" value="true"/>
-	  </properties>	  
+		<non-jta-data-source>java:jboss/datasources/ExampleDS</non-jta-data-source>
 
+{% for entity in classes %}		<class>{{entity.package}}.{{entity.name}}</class>
+{% endfor %} 
+		<properties>
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="false" />
+			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
+			<property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect" />
+		</properties>
 	</persistence-unit>
 
 </persistence>

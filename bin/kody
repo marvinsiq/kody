@@ -84,6 +84,22 @@ class KodyRunner < Thor
 		end
 	end
 
+	desc 'gt [MODEL]', "Generate code from the model using a specific template."
+    method_option :model, :type => :string, :required => true, :aliases => '-m', :banner => "Model path."
+    method_option :template, :type => :string, :required => true, :aliases => '-t', :banner => "Template."
+    #method_option :engine, :type => :string, :required => true, :aliases => '-e', :banner => "Engine."
+    #method_option :classes, :type => :string, :required => true, :aliases => '-cl', :banner => "Classes."
+    method_option :output, :type => :string, :required => true, :aliases => '-o', :banner => "Output."
+    def gt
+    	begin
+			kody = Kody.new
+			kody.generate2(options[:model], options[:template], options[:classes], options[:output])
+		rescue Exception => e 
+			App.logger.error e.message
+			puts e.backtrace.join("\n")
+		end
+	end
+
 	desc 'l', "List all types of projects"
 	def l
 		puts 'demoiselle-minimal'

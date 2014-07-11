@@ -8,8 +8,8 @@ class ClassBuilder
 	attr_reader :stereotype
 	attr_reader :name
 	attr_reader :package
-	attr_reader :persistence_package
-	attr_reader :business_package
+	#attr_reader :persistence_package
+	#attr_reader :business_package
 	attr_reader :enum_type
 
 	def initialize(clazz, engine)
@@ -24,11 +24,12 @@ class ClassBuilder
 		@annotations = Array.new
 		@imports = Array.new
 
+=begin
 		@persistence_package = engine.properties["project.persistence.package"];
 		raise "Property 'project.persistence.package' does not exists in #{App.specification.name}.properties." if @persistence_package.nil?
 		@business_package = engine.properties["project.business.package"]
 		raise "Property 'project.business.package' does not exists in #{App.specification.name}.properties." if @business_package.nil?
-
+=end
 		@enum_type = "String"
 
 		@attributes = Array.new
@@ -71,9 +72,9 @@ class ClassBuilder
 
 		# Verifica se este classe é filha e se a classe pai possui a tagged value @andromda.persistence.inheritance
 		if inheritance.nil? && !@clazz.parent.nil?
-			puts "Possui heranca #{@name }- #{@clazz.parent}"			
+			#puts "Possui heranca #{@name }- #{@clazz.parent}"			
 			@clazz.parent.tagged_values.each do |t|	
-				puts "Tags '#{t.name}' = '#{t.value}'"			
+				#puts "Tags '#{t.name}' = '#{t.value}'"			
 				if "@andromda.persistence.inheritance".eql?(t.name)
 					puts 'Chegou aqui'
 					if t.value == "org.andromda.profile::persistence::HibernateInheritanceStrategy::class"
@@ -127,14 +128,15 @@ class ClassBuilder
 	  {
 	  	'annotations' => @annotations,
 	  	'attributes' => @attributes,
-	  	'business_package' => @business_package,
+	  	#'business_package' => @business_package,
 	  	'extends' => @extends,
 	  	'enum_type' => @enum_type,
 	  	'name'=> @name,
 	  	'imports' => @imports,
 	  	'package' => @package,
-	  	'persistence_package' => @persistence_package,
+	  	#'persistence_package' => @persistence_package,
 	  	'relations' => relations,
+	  	'stereotype' => @stereotype.to_s,
 	  	'table_name' => table_name,
 	  	'sequence_name' => sequence_name
 	  }
