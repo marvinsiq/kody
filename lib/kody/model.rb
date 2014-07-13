@@ -18,4 +18,8 @@ class Model
 		@model.classes
 	end
 
+	def enumerations
+		@model.enumerations
+	end	
+
 end

@@ -1,4 +1,4 @@
-package {{class.persistence_package}};
+package {{project_persistence_package}};
 
 import br.gov.frameworkdemoiselle.stereotype.PersistenceController;
 import br.gov.frameworkdemoiselle.template.JPACrud;

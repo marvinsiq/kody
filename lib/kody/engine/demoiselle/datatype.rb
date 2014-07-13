@@ -4,6 +4,9 @@ class Datatype
 	def Datatype.java_type(type)
 		types = {
 
+			'Date' => "java.util.Date",
+			'Decimal' => "java.math.BigDecimal",
+
 			# UML Standard Profile
 			'UML Standard Profile::boolean' => "boolean",
 			'UML Standard Profile::byte' => "byte",

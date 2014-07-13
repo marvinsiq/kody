@@ -59,10 +59,14 @@ class AttributeBuilder
 			end
 
 			@annotations << "@Column(name=\"#{column_name}\", columnDefinition=\"#{type_enum}\")"
-			@annotations << "@Type(type = \"br.gov.mp.siconv.GenericEnumUserType\", parameters = { @Parameter(name = \"enumClass\", value = \"#{@type}\") })"
+			#@annotations << "@Type(type = \"br.gov.mp.siconv.GenericEnumUserType\", parameters = { @Parameter(name = \"enumClass\", value = \"#{@type}\") })"
+			@annotations << "@Enumerated(EnumType.STRING)"
 
-			@imports << "org.hibernate.annotations.Parameter"
-			@imports << "org.hibernate.annotations.Type"		
+			#@imports << "org.hibernate.annotations.Parameter"
+			#@imports << "org.hibernate.annotations.Type"	
+
+			@imports << "javax.persistence.EnumType"
+			@imports << "javax.persistence.Enumerated"
 		else
 			@annotations << "@Column(name=\"#{column_name}\")"
 		end

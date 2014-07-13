@@ -25,11 +25,6 @@ class Engine
 		App.logger.info "File saved in #{full_file_name}"		
 	end	
 
-	def load_template(template_name)
-		full_template_name = File.expand_path File.dirname(__FILE__) + "/templates/" + template_name
-		load_template_path(full_template_name)
-	end
-
 	def load_template_path(full_template_name)
 
 		@templates = Hash.new if @templates.nil?
@@ -56,7 +51,11 @@ class Engine
 
 		@model.classes.each do |clazz|
 			initialize_class(clazz)
-		end		
+		end
+
+		@model.enumerations.each do |enumeration|
+			initialize_enumeration(enumeration)
+		end	
 
 		App.logger.info "Builders initialized"
 	end
@@ -77,5 +76,11 @@ class Engine
 			return
 		end		
 	end	
+
+	def initialize_enumeration(enumeration)
+		class_builder = ClassBuilder.new(enumeration, self)
+		@classes << class_builder
+		@enumerations << class_builder	
+	end
 
 end

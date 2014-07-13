@@ -39,6 +39,12 @@ class Demoiselle < Engine
 		unless(@properties.nil?)
 			@project_files = "#{@output}/project/#{project_name}"
 		end
+
+		@properties.each do |key, value|			
+			@hash[key.gsub(".", "_")] = value
+			puts "mapeando "+key.gsub(".", "_")+" com #{value}"
+		end
+
 		@properties
 	end
 
@@ -112,7 +118,8 @@ class Demoiselle < Engine
 			rendered = template.render('classes' => @entities)
 
 			if index.nil?
-				App.logger.debug "File existes. Insert tag <PartialkodyGen> to generate parts"
+				App.logger.debug "File '#{file_name}' exists."
+				App.logger.debug "Insert tag <!-- <PartialkodyGen> --><!-- </PartialkodyGen> --> to generate parts."
 				return
 			else
 
@@ -155,31 +162,10 @@ class Demoiselle < Engine
 
 	private
 
-	def initialize_builders
-		App.logger.info "Initializing builders..."
-
-		@entities = Array.new
-		@enumerations = Array.new
-
-		@model.classes.each do |clazz|
-			initialize_class(clazz)
-		end		
-
-		App.logger.info "Builders initialized"
+	def load_template(template_name)
+		full_template_name = File.expand_path File.dirname(__FILE__) + "/templates/" + template_name
+		load_template_path(full_template_name)
 	end
-
-	def initialize_package(package)	
-		
-		#App.logger.debug "Package: #{package.name}"	
-		package.classes.sort.each do |c|
-			initialize_class(c)
-		end
-		
-		package.packages.sort.each do |p|
-			initialize_package(p)
-		end
-	end	
-
 
 	##
 	# @param [ClassBuilder, #read] class_builder
@@ -197,7 +183,7 @@ class Demoiselle < Engine
 			template = load_template("entity.tpl")
 		when :enumeration
 			template = load_template("enumeration.tpl")
-		else
+		else	
 			return
 		end
 
@@ -213,7 +199,8 @@ class Demoiselle < Engine
 			
 			@rendered = template.render(@hash)
 
-			path = "#{@project_files}/src/main/java/" + class_builder.persistence_package.gsub(".", "/") + "/"	
+			persistence_package = @properties["project.persistence.package"];
+			path = "#{@project_files}/src/main/java/" + persistence_package.gsub(".", "/") + "/"	
 			file_name = class_builder.name + "DAO.java"
 			save(@rendered, path, file_name)
 		end		
@@ -227,8 +214,10 @@ class Demoiselle < Engine
 			template = load_template("businnes.tpl")
 			@rendered = template.render(@hash)
 
-			path = "#{@project_files}/src/main/java/" + class_builder.business_package.gsub(".", "/") + "/"	
+			business_package = @properties["project.business.package"]
+			path = "#{@project_files}/src/main/java/" + business_package.gsub(".", "/") + "/"	
 			file_name = class_builder.name + "BC.java"
+
 			save(@rendered, path, file_name)
 		end
 	end

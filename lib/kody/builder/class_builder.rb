@@ -24,12 +24,6 @@ class ClassBuilder
 		@annotations = Array.new
 		@imports = Array.new
 
-=begin
-		@persistence_package = engine.properties["project.persistence.package"];
-		raise "Property 'project.persistence.package' does not exists in #{App.specification.name}.properties." if @persistence_package.nil?
-		@business_package = engine.properties["project.business.package"]
-		raise "Property 'project.business.package' does not exists in #{App.specification.name}.properties." if @business_package.nil?
-=end
 		@enum_type = "String"
 
 		@attributes = Array.new
@@ -119,6 +113,10 @@ class ClassBuilder
 			else
 				App.logger.warn "Stereotype desconhecido: '#{s.name}', classe: #{clazz.name}"	
 			end
+		end
+
+		if (@clazz.class.to_s == "Enumeration") 			
+			@stereotype = :enumeration
 		end
 
 		@imports = @imports.uniq.sort
