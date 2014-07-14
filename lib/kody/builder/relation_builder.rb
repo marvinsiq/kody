@@ -17,11 +17,13 @@ class Relation
 		#puts "multiplicity_range_end: #{multiplicity_range_end}"
 
 		if multiplicity_range_start.nil?
-			raise "Multiplicity not defided in relation '#{other_end.association.to_s}'. Side: '#{other_end.participant.full_name}'"
+			multiplicity_range_start = [1, 1]
+			#App.logger.warn "Multiplicity not defided in relation '#{other_end.association.to_s}'. Side: '#{other_end.participant.full_name}'"
 		end
 
 		if multiplicity_range_end.nil?
-			raise "Multiplicity not defided in relation '#{other_end.association.to_s}'. Side: '#{uml_association_end.participant.full_name}'"
+			multiplicity_range_end = [1, 1]
+			#App.logger.warn "Multiplicity not defided in relation '#{other_end.association.to_s}'. Side: '#{uml_association_end.participant.full_name}'"
 		end	
 		
 		if multiplicity_range_start[0] == 0 && multiplicity_range_start[1] == 1
@@ -181,8 +183,8 @@ class Relation
 			#puts "Tag: " + t.name + ", " + t.value
 
 			case t.name
-			when '@andromda.hibernate.cascade'
-				@cascade = Datatype.cascade(t.value)
+			#when '@andromda.hibernate.cascade'
+			#	@cascade = Datatype.cascade(t.value)
 
 			when '@andromda.hibernate.orderByColumns'
 				@imports << "javax.persistence.OrderBy"
