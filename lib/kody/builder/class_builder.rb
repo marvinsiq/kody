@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'kody/builder/attribute_builder'
+require 'kody/builder/relation_builder'
 require 'kody/string'
 
 class ClassBuilder
@@ -33,6 +34,13 @@ class ClassBuilder
 			@imports = @imports + att.imports
 			@enum_type = att.type
 		end
+
+		@relations = Array.new
+		@clazz.associations_end.each do |association_end|
+			relation = Relation.new(association_end, self, engine)
+			@relations << relation
+			@imports = @imports + relation.imports
+		end		
 
 		inheritance = nil
 
@@ -141,7 +149,7 @@ class ClassBuilder
 	end
 
 	def relations
-		Array.new
+		@relations
 	end
 
 	def table_name

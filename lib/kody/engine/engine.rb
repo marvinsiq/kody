@@ -9,13 +9,18 @@ require 'kody/engine/demoiselle/datatype'
 
 class Engine
 
-	def save(content, path, file_name = nil)
+	def save(content, path, file_name = nil, overwrite = true)
 		
 		if (file_name.nil?)	
 			full_file_name = path
 		else
 			FileUtils.mkdir_p(path) unless File.exists?(path)
 			full_file_name = "#{path}#{file_name}"
+		end
+
+		if !overwrite && File.exist?(full_file_name)
+			App.logger.warn "File #{full_file_name} exists."		
+			return
 		end
 
 		file = File.new(full_file_name, "w")

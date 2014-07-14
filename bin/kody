@@ -73,14 +73,15 @@ class KodyRunner < Thor
 
     desc 'g [MODEL]', "Generates code from the model."
     method_option :model, :type => :string, :required => true, :aliases => '-m', :banner => "Model path."
+    method_option :debug, :type => :boolean, :required => false, :aliases => '-d', :default => false,:banner => "Debug mode."
     def g
     	begin
 			kody = Kody.new
 			kody.from_xmi_file(options[:model])
 			kody.generate
 		rescue Exception => e 
-			App.logger.error e.message
-			puts e.backtrace.join("\n")
+			App.logger.error e.message			
+			puts e.backtrace.join("\n") if options[:debug]
 		end
 	end
 

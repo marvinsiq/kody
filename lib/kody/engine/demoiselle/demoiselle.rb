@@ -42,7 +42,7 @@ class Demoiselle < Engine
 
 		@properties.each do |key, value|			
 			@hash[key.gsub(".", "_")] = value
-			puts "mapeando "+key.gsub(".", "_")+" com #{value}"
+			#puts "mapeando "+key.gsub(".", "_")+" com #{value}"
 		end
 
 		@properties
@@ -202,7 +202,7 @@ class Demoiselle < Engine
 			persistence_package = @properties["project.persistence.package"];
 			path = "#{@project_files}/src/main/java/" + persistence_package.gsub(".", "/") + "/"	
 			file_name = class_builder.name + "DAO.java"
-			save(@rendered, path, file_name)
+			save(@rendered, path, file_name, false)
 		end		
 	end
 
@@ -218,7 +218,7 @@ class Demoiselle < Engine
 			path = "#{@project_files}/src/main/java/" + business_package.gsub(".", "/") + "/"	
 			file_name = class_builder.name + "BC.java"
 
-			save(@rendered, path, file_name)
+			save(@rendered, path, file_name, false)
 		end
 	end
 
