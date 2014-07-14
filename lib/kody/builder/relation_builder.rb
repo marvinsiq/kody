@@ -120,10 +120,12 @@ class Relation
     	
 		property_name = class_builder.name.underscore
     	target_class_name = participant.name unless participant.nil?
-		target_property_name = target_class_name.underscore
+		target_property_name = target_class_name.underscore		
 
     	@annotations = Array.new
     	@imports = Array.new
+
+    	@imports << participant.full_name
 
     	case type
     	
