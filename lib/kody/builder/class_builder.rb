@@ -1,10 +1,11 @@
 # encoding: utf-8
 
+require 'kody/builder/builder'
 require 'kody/builder/attribute_builder'
 require 'kody/builder/relation_builder'
 require 'kody/string'
 
-class ClassBuilder
+class ClassBuilder < Builder
 
 	attr_reader :stereotype
 	attr_reader :name
@@ -38,8 +39,10 @@ class ClassBuilder
 		@relations = Array.new
 		@clazz.associations_end.each do |association_end|
 			relation = Relation.new(association_end, self, engine)
-			@relations << relation
-			@imports = @imports + relation.imports
+			if relation.is_navigable
+				@relations << relation
+				@imports = @imports + relation.imports
+			end
 		end		
 
 		inheritance = nil
@@ -94,38 +97,8 @@ class ClassBuilder
 			@imports << "javax.persistence.InheritanceType"
 		end
 		
-		@clazz.stereotypes.each do |s|
-			case s.name
-			
-			when "org.andromda.profile::persistence::Entity", 
-				"UML Standard Profile::entity",
-				"Entity"
-				@stereotype = :entity				
-			
-			when "org.andromda.profile::persistence::WebServiceData"
-				@stereotype = :web_service_data
-			
-			when "org.andromda.profile::ApplicationException"
-				@stereotype = :application_exception
-			
-			when "org.andromda.profile::Enumeration",
-				"UML Standard Profile::UML2.0::enumeration"
-				@stereotype = :enumeration
-			
-			when "org.andromda.profile::presentation::FrontEndSessionObject"
-				@stereotype = :front_end_session_object
-			
-			when "org.andromda.profile::ValueObject"
-				@stereotype = :value_object
-			
-			else
-				App.logger.warn "Stereotype desconhecido: '#{s.name}', classe: #{clazz.name}"	
-			end
-		end
-
-		if (@clazz.class.to_s == "Enumeration") 			
-			@stereotype = :enumeration
-		end
+		stereotypes = stereotypes(@clazz)
+		@stereotype = stereotypes[0]
 
 		@imports = @imports.uniq.sort
 	end
@@ -164,7 +137,7 @@ class ClassBuilder
 
 			#puts "#{k} -> #{v} = #{@table_name}"
 		end
-		@table_name = @table_name[0, 30]
+		#@table_name = @table_name[0, 30]
 		@table_name
 	end
 

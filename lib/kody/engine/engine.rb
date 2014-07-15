@@ -19,7 +19,7 @@ class Engine
 		end
 
 		if !overwrite && File.exist?(full_file_name)
-			App.logger.warn "File #{full_file_name} exists."		
+			#App.logger.warn "File #{full_file_name} exists."		
 			return
 		end
 

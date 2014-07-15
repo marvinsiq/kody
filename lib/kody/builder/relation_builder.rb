@@ -1,14 +1,22 @@
+# encoding: utf-8
 
+require 'kody/builder/builder'
 
-class Relation
+class Relation < Builder
 
 	attr_reader :annotations
 	attr_reader :imports	
+	attr_reader :is_navigable
 
 	# UmlAssociationEnd
 	def initialize(uml_association_end, class_builder, engine)
 		
 		other_end = uml_association_end.other_end
+
+		@is_navigable = uml_association_end.is_navigable
+
+		#App.logger.warn "Associação '#{uml_association_end.association.to_s}' #{uml_association_end.is_navigable} para #{uml_association_end.to_s}"
+		#App.logger.warn "Associação '#{other_end.association.to_s}' #{other_end.is_navigable} para #{other_end.to_s}"
 		
 		multiplicity_range_start = other_end.multiplicity_range		
 		multiplicity_range_end = uml_association_end.multiplicity_range
@@ -127,6 +135,13 @@ class Relation
 
     	@imports << participant.full_name
 
+    	is_enum = false
+    	stereotypes = stereotypes(participant)    	
+    	if !stereotypes.index(:enumeration).nil?
+    		is_enum = true
+    		App.logger.debug "Possui relacionamento com enum. #{uml_association_end.association.to_s}"
+    	end
+
     	case type
     	
     	when "OneToOne"
@@ -135,24 +150,34 @@ class Relation
 		when "ManyToOne"
 			join_column_name = "#{@name.underscore}_fk"
 			@att_type = target_class_name
-			@target_entity = "#{target_class_name}.class" 
 
-			@annotations << "@ManyToOne(targetEntity=#{@target_entity})"
-			@annotations << "@JoinColumn(name = \"#{join_column_name}\", nullable = #{@nullable})"
+			if !is_enum
+				@target_entity = "#{target_class_name}.class" 
 
-			@imports << "javax.persistence.ManyToOne"
-			@imports << "javax.persistence.JoinColumn"			
+				@annotations << "@ManyToOne(targetEntity=#{@target_entity})"
+				@annotations << "@JoinColumn(name = \"#{join_column_name}\", nullable = #{@nullable})"
+
+				@imports << "javax.persistence.ManyToOne"
+				@imports << "javax.persistence.JoinColumn"			
+			end
 
 		when "OneToMany"
 			@att_type = "List<#{target_class_name}>"
 			@initialize = " = new ArrayList<#{target_class_name}>()"
+			
+			if !is_enum				
 
-			mappedBy = other_end_name
-
-			@annotations << '@OneToMany(mappedBy="' + mappedBy + '")'
-    		@imports << "javax.persistence.OneToMany"			
-			@imports << "java.util.ArrayList"
-			@imports << "java.util.List"
+				# Se a relação é unidirecional não usa o mappedBy
+				if other_end.is_navigable
+					mappedBy = other_end_name
+					@annotations << '@OneToMany(mappedBy="' + mappedBy + '")'
+				else
+					@annotations << '@OneToMany'
+				end
+	    		@imports << "javax.persistence.OneToMany"			
+				@imports << "java.util.ArrayList"
+				@imports << "java.util.List"
+			end
 
 		when "ManyToMany"
 			@att_type = "List<#{target_class_name}>"
