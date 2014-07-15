@@ -19,11 +19,11 @@ class KodyRunner < Thor
 		begin
 
 			opt = Hash.new			
-			if options[:project_name].nil?
+			if options[:project_type].nil?
 				print "Choose the type of project:\n"
 				print "\t1: Java (demoiselle-minimal)\n"
 				print "\t2: Java (demoiselle-jsf-jpa)\n"
-				print "Default is 2\n"
+				print "Default is 2: "
 
 				begin
 					project_type = STDIN.gets.sub("\n","")

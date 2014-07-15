@@ -37,12 +37,13 @@ class Demoiselle < Engine
 	def properties=(properties)
 		@properties = properties
 		unless(@properties.nil?)
-			@project_files = "#{@output}/project/#{project_name}"
-		end
+			#@project_files = "#{@output}/project/#{project_name}"
+			@project_files = "#{@output}"
 
-		@properties.each do |key, value|			
-			@hash[key.gsub(".", "_")] = value
-			#puts "mapeando "+key.gsub(".", "_")+" com #{value}"
+			@properties.each do |key, value|			
+				@hash[key.gsub(".", "_")] = value
+				#puts "mapeando "+key.gsub(".", "_")+" com #{value}"
+			end			
 		end
 
 		@properties
@@ -69,9 +70,9 @@ class Demoiselle < Engine
 
 		#TODO: validar se o projeto existe
 
-		create_dirs(params)
-		create_properties_file(params)
 		create_maven_project(params)
+		create_dirs(params)
+		create_properties_file(params)		
 
 		App.logger.info "Project #{params[:project_name]} created."		
 	end
@@ -272,7 +273,7 @@ class Demoiselle < Engine
 		FileUtils.mkdir_p(path)		
 		FileUtils.mkdir_p("#{path}/dataModel")
 		FileUtils.mkdir_p("#{path}/templates")
-		FileUtils.mkdir_p("#{path}/project")		
+		#FileUtils.mkdir_p("#{path}/project")		
 	end
 
 	def create_properties_file(params)
@@ -297,7 +298,8 @@ class Demoiselle < Engine
 		version = params[:framework_version]
 		artifact_id = params[:project_type]
 
-		@project_files = "#{@output}/#{project_name}/project"
+		#@project_files = "#{@output}/#{project_name}/project"
+		@project_files = @output
 		Dir.chdir(@project_files)
 
 		command = "mvn archetype:generate -DgroupId=#{project_group}.#{project_name} -DartifactId=#{project_name}"
