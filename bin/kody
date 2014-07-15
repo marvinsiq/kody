@@ -91,13 +91,14 @@ class KodyRunner < Thor
     #method_option :engine, :type => :string, :required => true, :aliases => '-e', :banner => "Engine."
     #method_option :classes, :type => :string, :required => true, :aliases => '-cl', :banner => "Classes."
     method_option :output, :type => :string, :required => true, :aliases => '-o', :banner => "Output."
+    method_option :debug, :type => :boolean, :required => false, :aliases => '-d', :default => false,:banner => "Debug mode."
     def gt
     	begin
 			kody = Kody.new
 			kody.generate2(options[:model], options[:template], options[:classes], options[:output])
 		rescue Exception => e 
 			App.logger.error e.message
-			puts e.backtrace.join("\n")
+			puts e.backtrace.join("\n") if options[:debug]
 		end
 	end
 
