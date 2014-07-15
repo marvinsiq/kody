@@ -2,6 +2,7 @@
 
 require 'kody/builder/builder'
 require 'kody/builder/attribute_builder'
+require 'kody/builder/operation_builder'
 require 'kody/builder/relation_builder'
 require 'kody/string'
 
@@ -43,7 +44,13 @@ class ClassBuilder < Builder
 				@relations << relation
 				@imports = @imports + relation.imports
 			end
-		end		
+		end
+
+		@operations = Array.new
+		@clazz.operations.each do |a|
+			operation = OperationBuilder.new(a, self, engine)
+			@operations << operation
+		end
 
 		inheritance = nil
 
@@ -111,6 +118,7 @@ class ClassBuilder < Builder
 	  	'extends' => @extends,
 	  	'enum_type' => @enum_type,
 	  	'name'=> @name,
+	  	'operations' => @operations,
 	  	'imports' => @imports,
 	  	'package' => @package,
 	  	#'persistence_package' => @persistence_package,

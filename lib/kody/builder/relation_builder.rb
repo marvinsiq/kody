@@ -34,73 +34,120 @@ class Relation < Builder
 			#App.logger.warn "Multiplicity not defided in relation '#{other_end.association.to_s}'. Side: '#{uml_association_end.participant.full_name}'"
 		end	
 		
-		if multiplicity_range_start[0] == 0 && multiplicity_range_start[1] == 1
+=begin
+		if multiplicity_range_start[0] == 0
 
-			if multiplicity_range_end[0] == 0 && multiplicity_range_end[1] == 1
-				type = "OneToOne"
-				nullable = true
-			elsif multiplicity_range_end[0] == 1 && multiplicity_range_end[1] == 1
-				type = "OneToOne"
-				nullable = false		
-			elsif multiplicity_range_end[0] == 0 && multiplicity_range_end[1] == -1
-				type = "OneToMany"
-				nullable = true
-			elsif multiplicity_range_end[0] == 1 && multiplicity_range_end[1] == -1
-				type = "OneToMany"
+			if multiplicity_range_end[0] == 0
+
+				nullable = true	
+
+				if multiplicity_range_end[1] == 1
+
+					unique = true
+
+					if multiplicity_range_start[1] == 0
+						# [0..0] -> [0..1]
+						type = "ManyToOne"									
+					elsif multiplicity_range_start[1] == 1
+						# [0..1] -> [0..1]
+						type = "OneToOne"
+					elsif multiplicity_range_start[1] == -1
+						# [0..*] -> [0..1]
+						type = "ManyToOne"				
+					end
+
+				elsif multiplicity_range_end[1] == -1
+
+					unique = false
+
+					if multiplicity_range_start[1] == 1
+						# [0..1] -> [0..*]
+						type = "OneToMany"
+					elsif multiplicity_range_start[1] == -1
+						# [0..*] -> [0..*]
+						type = "ManyToMany"				
+					end
+				end
+
+			elsif multiplicity_range_end[0] == 1
+				
 				nullable = false
+
+				if multiplicity_range_end[1] == 1
+					unique = true
+
+					if multiplicity_range_start[1] == 1
+						# [0..1] -> [1..1]
+						type = "OneToOne"
+					elsif multiplicity_range_start[1] == -1
+						# [0..*] -> [1..*]
+						type = "ManyToOne"
+					end
+				
+				elsif multiplicity_range_end[1] == -1
+					unique = false
+
+					if multiplicity_range_start[1] == 1
+						# [0..1] -> [1..*]
+						type = "OneToMany"
+					elsif multiplicity_range_start[1] == -1
+						# [0..*] -> [1..*]
+						type = "ManyToMany"					
+					end					
+				end
+			
 			end
 
-		elsif multiplicity_range_start[0] == 1 && multiplicity_range_start[1] == 1
+		elsif multiplicity_range_start[0] == 1
 
 			if multiplicity_range_end[0] == 0 && multiplicity_range_end[1] == 1
-				type = "OneToOne"
-				nullable = true
+				if multiplicity_range_start[1] == 1
+					type = "OneToOne"
+					nullable = true
+				elsif multiplicity_range_start[1] == -1
+					type = "ManyToOne"
+					nullable = true					
+				end
+			
 			elsif multiplicity_range_end[0] == 1 && multiplicity_range_end[1] == 1
-				type = "OneToOne"
-				nullable = false				
+				if multiplicity_range_start[1] == 1
+					type = "OneToOne"
+					nullable = false
+				elsif multiplicity_range_start[1] == -1
+					type = "ManyToOne"
+					nullable = false					
+				end
+			
 			elsif multiplicity_range_end[0] == 0 && multiplicity_range_end[1] == -1
-				type = "OneToMany"
-				nullable = true
+				if multiplicity_range_start[1] == 1
+					type = "OneToMany"
+					nullable = true
+				elsif multiplicity_range_start[1] == -1
+					type = "ManyToMany"
+					nullable = true
+				end
+			
 			elsif multiplicity_range_end[0] == 1 && multiplicity_range_end[1] == -1
-				type = "OneToMany"
-				nullable = false
-			end
-		
-		elsif multiplicity_range_start[0] == 0 && multiplicity_range_start[1] == -1
-
-			if multiplicity_range_end[0] == 0 && multiplicity_range_end[1] == 1
-				type = "ManyToOne"
-				nullable = true
-			elsif multiplicity_range_end[0] == 1 && multiplicity_range_end[1] == 1
-				type = "ManyToOne"
-				nullable = false		
-			elsif multiplicity_range_end[0] == 0 && multiplicity_range_end[1] == -1
-				type = "ManyToMany"
-				nullable = true
-			elsif multiplicity_range_end[0] == 1 && multiplicity_range_end[1] == -1
-				type = "ManyToMany"
-				nullable = false
-			end
-
-		elsif multiplicity_range_start[0] == 1 && multiplicity_range_start[1] == -1
-
-			if multiplicity_range_end[0] == 0 && multiplicity_range_end[1] == 1
-				type = "ManyToOne"
-				nullable = true
-			elsif multiplicity_range_end[0] == 1 && multiplicity_range_end[1] == 1
-				type = "ManyToOne"
-				nullable = false			
-			elsif multiplicity_range_end[0] == 0 && multiplicity_range_end[1] == -1
-				type = "ManyToMany"
-				nullable = true
-			elsif multiplicity_range_end[0] == 1 && multiplicity_range_end[1] == -1
-				type = "ManyToMany"
-				nullable = false
+				if multiplicity_range_start[1] == 1
+					type = "OneToMany"
+					nullable = false
+				elsif multiplicity_range_start[1] == -1
+					type = "ManyToMany"
+					nullable = false					
+				end
+			
 			end
 		end
 
 		@type = type
 		@nullable = nullable
+=end
+
+		from = multiplicity_name(multiplicity_range_start[0], multiplicity_range_start[1])
+		to = multiplicity_name(multiplicity_range_end[0], multiplicity_range_end[1])
+		type = from[0] + "To" + to[0]
+		@type = type
+		@nullable = to[1]
 
 		@name = uml_association_end.name
 		if @name == "EndA" || @name == "EndB"
@@ -142,7 +189,7 @@ class Relation < Builder
     		App.logger.debug "Possui relacionamento com enum. #{uml_association_end.association.to_s}"
     	end
 
-    	case type
+    	case @type
     	
     	when "OneToOne"
     		@att_type = target_class_name 
@@ -220,6 +267,37 @@ class Relation < Builder
 		end 
 	end
 
+	def multiplicity_name(lower, upper)
+		
+		name = nil
+		nullable = true
+
+		if lower == 0
+			
+			if upper == 0
+				name = "Many"
+			elsif upper == 1
+				nullable = false	
+				name = "One"
+			elsif upper == -1
+				name = "Many"
+			end
+		
+		elsif lower == 1
+
+			nullable = false
+			
+			if upper == 0
+				name = "One"
+			elsif upper == 1
+				name = "One"
+			elsif upper == -1
+				name = "Many"
+			end
+		end	
+
+		return [name, nullable]
+	end
 
 	def to_liquid
 		{
