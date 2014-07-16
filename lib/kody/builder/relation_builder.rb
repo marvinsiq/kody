@@ -21,8 +21,8 @@ class Relation < Builder
 		multiplicity_range_start = other_end.multiplicity_range		
 		multiplicity_range_end = uml_association_end.multiplicity_range
 
-		#puts "multiplicity_range_start: #{multiplicity_range_start}"
-		#puts "multiplicity_range_end: #{multiplicity_range_end}"
+		#App.logger.debug "multiplicity_range_start: #{multiplicity_range_start}"
+		#App.logger.debug "multiplicity_range_end: #{multiplicity_range_end}"
 
 		if multiplicity_range_start.nil?
 			multiplicity_range_start = [1, 1]
@@ -34,115 +34,6 @@ class Relation < Builder
 			#App.logger.warn "Multiplicity not defided in relation '#{other_end.association.to_s}'. Side: '#{uml_association_end.participant.full_name}'"
 		end	
 		
-=begin
-		if multiplicity_range_start[0] == 0
-
-			if multiplicity_range_end[0] == 0
-
-				nullable = true	
-
-				if multiplicity_range_end[1] == 1
-
-					unique = true
-
-					if multiplicity_range_start[1] == 0
-						# [0..0] -> [0..1]
-						type = "ManyToOne"									
-					elsif multiplicity_range_start[1] == 1
-						# [0..1] -> [0..1]
-						type = "OneToOne"
-					elsif multiplicity_range_start[1] == -1
-						# [0..*] -> [0..1]
-						type = "ManyToOne"				
-					end
-
-				elsif multiplicity_range_end[1] == -1
-
-					unique = false
-
-					if multiplicity_range_start[1] == 1
-						# [0..1] -> [0..*]
-						type = "OneToMany"
-					elsif multiplicity_range_start[1] == -1
-						# [0..*] -> [0..*]
-						type = "ManyToMany"				
-					end
-				end
-
-			elsif multiplicity_range_end[0] == 1
-				
-				nullable = false
-
-				if multiplicity_range_end[1] == 1
-					unique = true
-
-					if multiplicity_range_start[1] == 1
-						# [0..1] -> [1..1]
-						type = "OneToOne"
-					elsif multiplicity_range_start[1] == -1
-						# [0..*] -> [1..*]
-						type = "ManyToOne"
-					end
-				
-				elsif multiplicity_range_end[1] == -1
-					unique = false
-
-					if multiplicity_range_start[1] == 1
-						# [0..1] -> [1..*]
-						type = "OneToMany"
-					elsif multiplicity_range_start[1] == -1
-						# [0..*] -> [1..*]
-						type = "ManyToMany"					
-					end					
-				end
-			
-			end
-
-		elsif multiplicity_range_start[0] == 1
-
-			if multiplicity_range_end[0] == 0 && multiplicity_range_end[1] == 1
-				if multiplicity_range_start[1] == 1
-					type = "OneToOne"
-					nullable = true
-				elsif multiplicity_range_start[1] == -1
-					type = "ManyToOne"
-					nullable = true					
-				end
-			
-			elsif multiplicity_range_end[0] == 1 && multiplicity_range_end[1] == 1
-				if multiplicity_range_start[1] == 1
-					type = "OneToOne"
-					nullable = false
-				elsif multiplicity_range_start[1] == -1
-					type = "ManyToOne"
-					nullable = false					
-				end
-			
-			elsif multiplicity_range_end[0] == 0 && multiplicity_range_end[1] == -1
-				if multiplicity_range_start[1] == 1
-					type = "OneToMany"
-					nullable = true
-				elsif multiplicity_range_start[1] == -1
-					type = "ManyToMany"
-					nullable = true
-				end
-			
-			elsif multiplicity_range_end[0] == 1 && multiplicity_range_end[1] == -1
-				if multiplicity_range_start[1] == 1
-					type = "OneToMany"
-					nullable = false
-				elsif multiplicity_range_start[1] == -1
-					type = "ManyToMany"
-					nullable = false					
-				end
-			
-			end
-		end
-
-		@type = type
-		@nullable = nullable
-=end
-
 		from = multiplicity_name(multiplicity_range_start[0], multiplicity_range_start[1])
 		to = multiplicity_name(multiplicity_range_end[0], multiplicity_range_end[1])
 		type = from[0] + "To" + to[0]
@@ -294,6 +185,18 @@ class Relation < Builder
 			elsif upper == -1
 				name = "Many"
 			end
+		
+		elsif lower == -1
+
+			nullable = false
+			
+			if upper == 0
+				name = "Many"
+			elsif upper == 1
+				name = "Many"
+			elsif upper == -1
+				name = "Many"
+			end		
 		end	
 
 		return [name, nullable]
