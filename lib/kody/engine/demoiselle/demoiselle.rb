@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'fileutils'
 require 'liquid'
 require 'kody/modules'
@@ -37,12 +39,14 @@ class Demoiselle < Engine
 	def properties=(properties)
 		@properties = properties
 		unless(@properties.nil?)
-			#@project_files = "#{@output}/project/#{project_name}"
 			@project_files = "#{@output}"
 
-			@properties.each do |key, value|			
+			@properties.each do |key, value|
+				# Mapeando as propriedades do arquivo kody.properties nos templates.
+				# Substitui os pontos por "_".
+				# Exemplo de mapeamento:
+				# => project.name = project_name
 				@hash[key.gsub(".", "_")] = value
-				#puts "mapeando "+key.gsub(".", "_")+" com #{value}"
 			end			
 		end
 
@@ -69,7 +73,6 @@ class Demoiselle < Engine
 	def create_project(params)
 
 		#TODO: validar se o projeto existe
-
 		create_maven_project(params)
 		create_dirs(params)
 		create_properties_file(params)		
@@ -77,34 +80,139 @@ class Demoiselle < Engine
 		App.logger.info "Project #{params[:project_name]} created."		
 	end
 
-	def generate
-		generate_domain
-		generate_enumerations
-		generate_businnes
-		generate_persistence_xml
+	def generate(templates)
+
+		if templates.include?("domain")
+			App.logger.info "Generating template \"domain\"."
+			generate_domain
+		end
+		
+		if templates.include?("enum")
+			App.logger.info "Generating template \"enum\"."
+			generate_enumerations
+		end
+		
+		if templates.include?("businnes")
+			App.logger.info "Generating template \"businnes\"."
+			generate_businnes
+		end
+		
+		if templates.include?("persistence")
+			App.logger.info "Generating template \"persistence\"."
+			generate_persistence
+			generate_persistence_xml
+		end
+		
+		if templates.include?("crud-jsf2")
+			App.logger.info "Generating template \"crud-jsf2\"."
+			generate_managed_bean
+			generate_xhtml
+			generate_messages_properties
+		end
+
 	end
 
-	# Gera os Beans e os DAOs
+	def convert_type(type)
+		Datatype.java_type(type)
+	end	
+
+	private
+
+	##
+	# Gera os Beans
+	#
 	def generate_domain
-		@entities.each do |e|			
-			generate_class(e)
+		@entities.each do |clazz|
+			@hash['class'] = clazz
+
+			if clazz.stereotype == :entity
+				template = load_template("entity.tpl")
+				@rendered = template.render(@hash)
+				path = "#{@project_files}/src/main/java/" + clazz.package.gsub(".", "/") + "/"
+				file_name = clazz.name + ".java"
+				save(@rendered, path, file_name)
+			end
 		end
 	end
 
+	##
 	# Gera as enumerações
+	#
 	def generate_enumerations
-		@enumerations.each do |e|
-			generate_class(e)
+		@enumerations.each do |clazz|
+			@hash['class'] = clazz
+
+			if clazz.stereotype == :enumeration
+				template = load_template("enumeration.tpl")
+				@rendered = template.render(@hash)
+				path = "#{@project_files}/src/main/java/" + clazz.package.gsub(".", "/") + "/"
+				file_name = clazz.name + ".java"
+				save(@rendered, path, file_name)
+			end				
 		end	
 	end	
 
+	##
 	# Gera as classes da camada de negócio baseada nas entidades
+	#
 	def generate_businnes
-		@entities.each do |e|			
-			generate_bc(e)
+		@entities.each do |clazz|
+
+			if clazz.stereotype == :entity
+				
+				@hash['class'] = clazz
+
+				template = load_template("businnes.tpl")
+				@rendered = template.render(@hash)
+
+				business_package = @properties["project.business.package"]
+				path = "#{@project_files}/src/main/java/" + business_package.gsub(".", "/") + "/"	
+				file_name = clazz.name + "BC.java"
+
+				save(@rendered, path, file_name, false)
+			end			
 		end		
 	end
+
+	## 
+	# Gera as classes da camada de persistencia baseada nas entidades
+	#
+	def generate_persistence
+		@entities.each do |clazz|
+			@hash['class'] = clazz
+			if clazz.stereotype == :entity
+				template = load_template("persistence.tpl")
+				
+				@rendered = template.render(@hash)
+
+				persistence_package = @properties["project.persistence.package"];
+				path = "#{@project_files}/src/main/java/" + persistence_package.gsub(".", "/") + "/"	
+				file_name = clazz.name + "DAO.java"
+				save(@rendered, path, file_name, false)
+			end		
+		end
+	end
 	
+	# Gera o arquivo de configuração do JPA
+	def generate_persistence_xml
+
+		path = "#{@project_files}/src/main/resources/META-INF/"
+		file_name = "persistence.xml"
+
+		full_file_name = "#{path}#{file_name}"
+		process_template("persistence.xml.tpl", "persistence.xml.partial.tpl", full_file_name)
+
+		path = "#{@project_files}/src/test/resources/META-INF/"
+		
+		full_file_name = "#{path}#{file_name}"
+		process_template("persistence_test.xml.tpl","persistence.xml.partial.tpl", full_file_name)		
+	end	
+
+	def load_template(template_name)
+		full_template_name = File.expand_path File.dirname(__FILE__) + "/templates/" + template_name
+		load_template_path(full_template_name)
+	end
+
 	def process_template(template, partial_template, file_name)
 		
 		# Verifica se arquivo existe		
@@ -142,131 +250,67 @@ class Demoiselle < Engine
 		save(rendered, file_name)		
 	end	
 
-	# Gera o arquivo de configuração do JPA
-	def generate_persistence_xml
+	def generate_managed_bean
 
-		path = "#{@project_files}/src/main/resources/META-INF/"
-		file_name = "persistence.xml"
+		@entities.each do |clazz|
+			if clazz.stereotype == :entity
 
-		full_file_name = "#{path}#{file_name}"
-		process_template("persistence.xml.tpl", "persistence.xml.partial.tpl", full_file_name)
+				@hash['class'] = clazz
 
-		path = "#{@project_files}/src/test/resources/META-INF/"
-		
-		full_file_name = "#{path}#{file_name}"
-		process_template("persistence_test.xml.tpl","persistence.xml.partial.tpl", full_file_name)		
-	end	
+				template = load_template("view_mb_list.tpl")
+				@rendered = template.render(@hash)
 
-	def convert_type(type)
-		Datatype.java_type(type)
-	end
+				view_package = @properties["project.view.package"]
 
-	private
+				path = "#{@project_files}/src/main/java/" + view_package.gsub(".", "/") + "/"
+				file_name = clazz.name + "ListMB.java"
+				save(@rendered, path, file_name)
 
-	def load_template(template_name)
-		full_template_name = File.expand_path File.dirname(__FILE__) + "/templates/" + template_name
-		load_template_path(full_template_name)
-	end
+				template = load_template("view_mb_edit.tpl")
+				@rendered = template.render(@hash)
 
-	##
-	# @param [ClassBuilder, #read] class_builder
-	def generate_class(class_builder)
-	
-		@hash['class'] = class_builder
-		generate_classes(class_builder)
-		generate_dao(class_builder)
-	end
-
-	def generate_classes(class_builder)
-
-		case class_builder.stereotype
-		when :entity			
-			template = load_template("entity.tpl")
-		when :enumeration
-			template = load_template("enumeration.tpl")
-		else	
-			return
+				path = "#{@project_files}/src/main/java/" + view_package.gsub(".", "/") + "/"
+				file_name = clazz.name + "EditMB.java"
+				save(@rendered, path, file_name)
+			end
 		end
-
-		@rendered = template.render(@hash)
-		path = "#{@project_files}/src/main/java/" + class_builder.package.gsub(".", "/") + "/"
-		file_name = class_builder.name + ".java"
-		save(@rendered, path, file_name)		
 	end	
 
-	def generate_dao(class_builder)
-		if class_builder.stereotype == :entity
-			template = load_template("persistence.tpl")
-			
-			@rendered = template.render(@hash)
+	def generate_xhtml
 
-			persistence_package = @properties["project.persistence.package"];
-			path = "#{@project_files}/src/main/java/" + persistence_package.gsub(".", "/") + "/"	
-			file_name = class_builder.name + "DAO.java"
-			save(@rendered, path, file_name, false)
+		@entities.each do |clazz|
+			if clazz.stereotype == :entity
+
+				@hash['class'] = clazz	
+
+				template = load_template("view_list.tpl")
+				@hash["managed_bean"] = clazz.name.lower_camel_case + "ListMB"
+				@rendered = template.render(@hash)
+
+				path = "#{@project_files}/src/main/webapp/"
+				file_name = clazz.name.underscore + "_list.xhtml"
+				save(@rendered, path, file_name)
+
+				template = load_template("view_edit.tpl")
+				@rendered = template.render(@hash)
+
+				path = "#{@project_files}/src/main/webapp/"
+				file_name = clazz.name.underscore + "_edit.xhtml"
+				save(@rendered, path, file_name)
+			end
 		end		
-	end
-
-	def generate_bc(class_builder)
-		if class_builder.stereotype == :entity
-			
-			@hash['class'] = class_builder
-
-			template = load_template("businnes.tpl")
-			@rendered = template.render(@hash)
-
-			business_package = @properties["project.business.package"]
-			path = "#{@project_files}/src/main/java/" + business_package.gsub(".", "/") + "/"	
-			file_name = class_builder.name + "BC.java"
-
-			save(@rendered, path, file_name, false)
-		end
-	end
-
-=begin
-	def generate_view
-		template = load_template("view_mb_list.tpl")
-		@rendered = template.render(@hash)
-
-		path = "#{@project_files}/src/main/java/" + clazz.view_package.gsub(".", "/") + "/"
-		file_name = clazz.name + "ListMB.java"
-		save(@rendered, path, file_name)
-
-		template = load_template("view_mb_edit.tpl")
-		@rendered = template.render(@hash)
-
-		path = "#{@project_files}/src/main/java/" + clazz.view_package.gsub(".", "/") + "/"
-		file_name = clazz.name + "EditMB.java"
-		save(@rendered, path, file_name)
 	end	
 
-	def generate_web
-		template = load_template("view_list.tpl")
-		@hash["managed_bean"] = clazz.name.lower_camel_case + "ListMB"
-		@rendered = template.render(@hash)
+	def generate_messages_properties
 
-		path = "#{@project_files}/src/main/webapp/"
-		file_name = clazz.name.underscore + "_list.xhtml"
-		save(@rendered, path, file_name)
-
-		template = load_template("view_edit.tpl")
-		@rendered = template.render(@hash)
-
-		path = "#{@project_files}/src/main/webapp/"
-		file_name = clazz.name.underscore + "_edit.xhtml"
-		save(@rendered, path, file_name)
-	end	
-
-	def generate_messages(classes)
 		template = load_template("messages.tpl")
-		@rendered = template.render('classes' => classes)
+		@rendered = template.render('classes' => @entities)
 
 		path = "#{@project_files}/src/main/resources/"
 		file_name = "messages2.properties"
 		
-		save(@rendered, path, file_name)		
+		save(@rendered, path, file_name)
 	end
-=end
 
 	def create_dirs(params)
 		path = "#{@output}/#{params[:project_name]}"		
@@ -276,6 +320,9 @@ class Demoiselle < Engine
 		#FileUtils.mkdir_p("#{path}/project")		
 	end
 
+	##
+	# Cria o arquivo de propriedades do projeto
+	#
 	def create_properties_file(params)
 
 		path = "#{@output}/#{params[:project_name]}"
@@ -292,6 +339,9 @@ class Demoiselle < Engine
 		Properties.create(path, properties)
 	end
 
+	##
+	# Cria o projeto demoiselle utilizando o arquétipo do maven
+	#
 	def create_maven_project(params)
 		project_name = params[:project_name]
 		project_group = params[:project_group]

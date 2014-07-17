@@ -1,4 +1,4 @@
-package {{class.view_package}};
+package {{project_view_package}};
 
 import java.util.Iterator;
 import java.util.List;
@@ -11,12 +11,12 @@ import br.gov.frameworkdemoiselle.stereotype.ViewController;
 import br.gov.frameworkdemoiselle.template.AbstractListPageBean;
 import br.gov.frameworkdemoiselle.transaction.Transactional;
 
-import {{class.business_package}}.{{class.name}}BC;
+import {{project_business_package}}.{{class.name}}BC;
 import {{class.package}}.{{class.name}};
 
 @ViewController
-@NextView("./{{class.underscore_name}}_edit.xhtml")
-@PreviousView("./{{class.underscore_name}}_list.xhtml")
+@NextView("./{{class.name | underscore}}_edit.xhtml")
+@PreviousView("./{{class.name | underscore}}_list.xhtml")
 public class {{class.name}}ListMB extends AbstractListPageBean<{{class.name}}, Long> {
 
 	private static final long serialVersionUID = 1L;

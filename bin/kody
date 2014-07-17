@@ -73,10 +73,11 @@ class KodyRunner < Thor
 
     desc 'g [MODEL]', "Generates code from the model."
     method_option :model, :type => :string, :required => true, :aliases => '-m', :banner => "Model path."
+    method_option :templates, :type => :string, :required => false, :aliases => '-t', :default => "domain business persistence", :banner => "Templates"
     method_option :debug, :type => :boolean, :required => false, :aliases => '-d', :default => false,:banner => "Debug mode."
     def g
     	begin
-			kody = Kody.new
+			kody = Kody.new(options)
 			kody.from_xmi_file(options[:model])
 			kody.generate
 		rescue Exception => e 

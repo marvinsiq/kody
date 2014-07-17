@@ -6,8 +6,8 @@ class Parser
 		@engine = engine
 	end
 
-	def generate
-		@engine.generate				
+	def generate(templates)
+		@engine.generate(templates)			
 	end
 
 	def generate_template(template_path, output)

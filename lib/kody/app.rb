@@ -50,7 +50,7 @@ class App
 
 		return Array.new unless File.exists? properties_filename
 
-		App.logger.info "Loading property file #{properties_filename}..."
+		App.logger.info "Loading project property file #{properties_filename}..."
 
 	    @@abbreviations = {}
 	    File.open(properties_filename, 'r') do |properties_file|

@@ -9,7 +9,7 @@ class Properties
 
 		raise "Arquivo de propriedades do projeto não existe (#{properties_filename})." unless File.exists? properties_path
 
-		App.logger.info "Loading property file #{properties_filename}..."
+		App.logger.info "Loading project property file #{properties_filename}..."
 
 	    properties = {}
 	    File.open(properties_path, 'r') do |properties_file|

@@ -6,8 +6,8 @@ module TextFilter
     input[0].upcase + input[1..-1]
   end
 
-  def underscore
-    self.
+  def underscore(input)
+    input.
     gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
     gsub(/([a-z\d])([A-Z])/,'\1_\2').
     gsub(/([A-Z\d])([A-Z])/,'\1_\2').

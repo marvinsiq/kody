@@ -41,7 +41,7 @@ class Engine
 
 		@templates[full_template_name] = template
 
-		App.logger.info "Template '#{full_template_name}' loaded..."
+		App.logger.debug "Template '#{full_template_name}' loaded..."
 
 		return template
 	end

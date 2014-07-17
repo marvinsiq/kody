@@ -7,9 +7,11 @@ require File.join(File.dirname(__FILE__), 'kody/engine/generic/generic_engine.rb
 
 class Kody
 
-	def initialize
+	def initialize(options=nil)
 		@inicio = Time.now
 		App.logger.info "#{App.specification.summary} version #{App.specification.version}"
+
+		@options = options
 	end
 
 	def from_xmi_file(file)
@@ -36,8 +38,10 @@ class Kody
 		engine(@properties["project.type"], @properties["framework.version"])
 		raise "You need define a engine." if @engine.nil?
 		
+		templates = @options[:templates].split
+
 		parser = Parser.new(@engine)
-		parser.generate
+		parser.generate(templates)
 
 		App.logger.info "Done: #{Util.diff_time(@inicio)}"
 
