@@ -57,6 +57,15 @@ class GenericEngine < Engine
 			save(@rendered, path, file_name)				
 		end
 
+		@use_cases.each do |use_case|
+			@hash['use_case'] = use_case
+			@rendered = template.render(@hash).strip
+			next if @rendered.empty?
+
+			path = output + "/src/main/webapp/#{use_case.name}/"
+			file_name = use_case.name.underscore + ".xhtml"
+			save(@rendered, path, file_name)
+		end
 	
 	end
 

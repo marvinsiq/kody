@@ -20,6 +20,10 @@ class Model
 
 	def enumerations
 		@model.enumerations
+	end
+
+	def use_cases
+		@model.use_cases
 	end	
 
 end

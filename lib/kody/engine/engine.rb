@@ -5,6 +5,7 @@ require 'kody/string'
 require 'kody/properties'
 require 'kody/builder/class_builder'
 require 'kody/builder/project_builder'
+require 'kody/builder/use_case_builder'
 require 'kody/engine/demoiselle/datatype'
 
 class Engine
@@ -53,6 +54,7 @@ class Engine
 		@classes = Array.new
 		@entities = Array.new
 		@enumerations = Array.new
+		@use_cases = Array.new
 
 		@model.classes.each do |clazz|
 			initialize_class(clazz)
@@ -60,7 +62,11 @@ class Engine
 
 		@model.enumerations.each do |enumeration|
 			initialize_enumeration(enumeration)
-		end	
+		end
+
+		@model.use_cases.each do |use_case|
+			initialize_use_cases(use_case)
+		end		
 
 		App.logger.info "Builders initialized"
 	end
@@ -86,6 +92,11 @@ class Engine
 		class_builder = ClassBuilder.new(enumeration, self)
 		@classes << class_builder
 		@enumerations << class_builder	
+	end
+
+	def initialize_use_cases(use_case)
+		use_case_builder = UseCaseBuilder.new(use_case, self)
+		@use_cases << use_case_builder
 	end
 
 end
