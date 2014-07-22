@@ -48,7 +48,7 @@ class ClassBuilder < Builder
 
 		@operations = Array.new
 		@clazz.operations.each do |a|
-			operation = OperationBuilder.new(a, self, engine)
+			operation = OperationBuilder.new(a, engine)
 			@operations << operation
 		end
 

@@ -16,7 +16,7 @@ class Engine
 			full_file_name = path
 		else
 			FileUtils.mkdir_p(path) unless File.exists?(path)
-			full_file_name = "#{path}#{file_name}"
+			full_file_name = "#{path}/#{file_name}"
 		end
 
 		if !overwrite && File.exist?(full_file_name)

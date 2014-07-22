@@ -319,9 +319,34 @@ class Demoiselle < Engine
 
 	def generate_use_case
 		@use_cases.each do |use_case|
-			@hash['use_case'] = use_case
 
+			App.logger.info "Use Case: " + use_case.name
 
+			use_case.pages.each do |page|
+				App.logger.info "Page: " + page.name
+
+				@hash['page'] = page
+				template = load_template("page.tpl")
+				@rendered = template.render(@hash)
+
+				path = "#{@project_files}/src/main/webapp/"
+				file_name = page.name.hyphenate + ".xhtml"
+				save(@rendered, path, file_name)				
+			end
+
+			use_case.controllers.each do |controller|
+				App.logger.info "Managed Bean:" + controller.name
+
+				controller.package = properties["project.group"] + "." + properties["project.name"] + ".view" 
+
+				@hash['controller'] = controller
+				template = load_template("controller.tpl")
+				@rendered = template.render(@hash)
+
+				path = "#{@project_files}/src/main/java/" + controller.package.gsub(".", "/")
+				file_name = controller.name + ".java"
+				save(@rendered, path, file_name)				
+			end
 		end
 	end
 

@@ -2,10 +2,14 @@ require 'kody/string'
 
 class AttributeBuilder
 
-	attr_reader :type
-	attr_reader :imports
+	attr_accessor :name
+	attr_accessor :type
+	attr_accessor :imports
 
-	def initialize(attribute, class_builder, engine)
+	def initialize(attribute=nil, class_builder=nil, engine=nil)
+
+		return if attribute.nil?
+
 		@attribute = attribute
 		@engine = engine
 
@@ -17,7 +21,7 @@ class AttributeBuilder
 		
 		@multiplicity_range = @attribute.multiplicity_range
 		
-		@clazz = class_builder.name
+		@clazz = class_builder.name unless class_builder.nil?
 
 		if @type == "String"
 			@initial_value = "\"#{@attribute.initial_value}\""

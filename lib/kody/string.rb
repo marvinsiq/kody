@@ -1,8 +1,13 @@
 
 class String
-  def capitalize_first(input)
-    input[0].upcase + input[1..-1]
+  
+  def capitalize_first
+    self[0].upcase + self[1..-1]
   end
+
+  def uncapitalize
+    self[0].downcase + self[1..-1]
+  end  
 
   def underscore
     self.
@@ -12,11 +17,23 @@ class String
     gsub(/([A-Z\d])([A-Z])/,'\1_\2').
     tr("-", "_").
     downcase
-  end	
+  end
+
+  def hyphenate
+    self.
+    gsub(/([A-Z]+)([A-Z][a-z])/,'\1-\2').
+    gsub(/([a-z\d])([A-Z])/,'\1-\2').
+    gsub(/([A-Z\d])([A-Z])/,'\1-\2').
+    gsub(/([A-Z\d])([A-Z])/,'\1-\2').
+    tr(" ", "-").
+    tr("_", "-").
+    downcase    
+  end
 
   def camel_case
-      return self.clone if self !~ /_/ && self =~ /[A-Z]+.*/
-      split('_').map{|e| e.capitalize}.join
+      return self.clone if self !~ /_/ && self !~ / / && self =~ /[A-Z]+.*/
+      split('_').map{|e| e.capitalize}.join.
+      split(' ').map{|e| e.capitalize}.join
   end
 
   def lower_camel_case

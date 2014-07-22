@@ -28,8 +28,8 @@ class Kody
 			@engine.output = Dir.pwd		
 		else
 			raise "Engine '#{type}' not supported."
-		end
-		App.logger.info "Using the engine '#{@engine.name}' version #{version}."
+		end 
+		App.logger.info "Using '#{@engine.name}' engine, version #{version}."
 	end
 
 	def generate
@@ -61,7 +61,7 @@ class Kody
 
 		@engine = GenericEngine.new(@model, @properties)
 		@engine.output = Dir.pwd
-		App.logger.info "Using the engine '#{@engine.name}' version #{@engine.version}."
+		App.logger.info "Using '#{@engine.name}' engine, version #{@engine.version}."
 		
 		parser = Parser.new(@engine)
 		parser.generate_template(template, output)

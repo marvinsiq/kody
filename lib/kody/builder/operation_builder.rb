@@ -4,15 +4,21 @@ require 'kody/builder/builder'
 
 class OperationBuilder < Builder
 
-	def initialize(operation, class_builder, engine)
-		
-		@engine = engine
+	attr_accessor :name	
+	attr_accessor :return_type
+	attr_accessor :visibility
 
-		@name = operation.name
+	def initialize(operation=nil, engine=nil)
+	
+		@engine = engine
+		
 		@visibility = "public" #operation.visibility
 		@return_type = "void"
 
-		@imports = Array.new	
+		@imports = Array.new
+
+		return if operation.nil?
+		@name = operation.name
 	end	
 
 	def to_liquid
