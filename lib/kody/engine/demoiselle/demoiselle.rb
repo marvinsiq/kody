@@ -110,6 +110,11 @@ class Demoiselle < Engine
 			generate_messages_properties
 		end
 
+		if templates.include?("use-case")
+			App.logger.info "Generating template \"use-case\"."
+			generate_use_case
+		end		
+
 	end
 
 	def convert_type(type)
@@ -310,6 +315,14 @@ class Demoiselle < Engine
 		file_name = "messages2.properties"
 		
 		save(@rendered, path, file_name)
+	end
+
+	def generate_use_case
+		@use_cases.each do |use_case|
+			@hash['use_case'] = use_case
+
+
+		end
 	end
 
 	def create_dirs(params)

@@ -62,7 +62,7 @@ class GenericEngine < Engine
 			@rendered = template.render(@hash).strip
 			next if @rendered.empty?
 
-			path = output + "/src/main/webapp/#{use_case.name}/"
+			path = output + "#{use_case.name}/"
 			file_name = use_case.name.underscore + ".xhtml"
 			save(@rendered, path, file_name)
 		end
