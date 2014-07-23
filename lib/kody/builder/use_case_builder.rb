@@ -20,7 +20,7 @@ class UseCaseBuilder < Builder
 		@controllers = Array.new
 
 		use_case.activity_graphs.each do |activity_graph|
-			activity_graph.initial_state.targets.each do |state|
+			activity_graph.states.each do |state|
 				init_state(state)
 			end
 		end
@@ -52,33 +52,46 @@ class UseCaseBuilder < Builder
 
 			page.controller = controller
 
-			if !state.from_transition.nil? && !state.from_transition.trigger.nil?				
-				state.from_transition.trigger.parameters.each do |parameter|
+			state.from_transitions.each do |from_transition|
+				if !from_transition.trigger.nil?				
+					from_transition.trigger.parameters.each do |parameter|
 
-					field = FieldBuilder.new(parameter)
-					parameter = ParameterBuilder.new(parameter, @engine)
-												
-					controller.parameters << parameter unless controller.parameters.include? parameter
-					page.fields << field unless page.fields.include? field
-				end				
+						field = FieldBuilder.new(parameter)
+						parameter = ParameterBuilder.new(parameter, @engine)
+													
+						controller.parameters << parameter unless controller.parameters.include? parameter
+						page.fields << field unless page.fields.include? field
+					end	
+				end			
 			end
 
 			# Itera sobre os actions e as transições para pegar os parâmetros e métodos
-			state.targets.each do |target|
+			state.transitions.each do |transition|
+
+				target = transition.target
+
+				parameter.tagged_values.each do |tagged_value|
+					case tagged_value.name 
+					when "@andromda.presentation.web.action.tablelink"
+						# indica que a ação será executada de dentro de uma tabela
+						# cada item da tabela terá um botão
+						tablelink = tagged_value.value
+					end
+				end					
 
 				# Se a transição possui uma trigger (signal, call)
-				if !target.from_transition.trigger.nil?
+				if !transition.trigger.nil?
 
 					# Se o Action state possui um deferrable_event, ou seja, está ligado a um método de uma classe
 					if target.is_action_state? && !target.deferrable_event.nil? && !target.deferrable_event.operation.nil?
 						operation = OperationBuilder.new(target.deferrable_event.operation, @engine)
 					else
 						operation = OperationBuilder.new
-						operation.name = target.from_transition.trigger.name
+						operation.name = transition.trigger.name
 					end
 					controller.operations << operation							
 
-					target.from_transition.trigger.parameters.each do |parameter|						
+					transition.trigger.parameters.each do |parameter|						
 						
 						field = FieldBuilder.new(parameter)
 						parameter = ParameterBuilder.new(parameter, @engine)
@@ -90,11 +103,7 @@ class UseCaseBuilder < Builder
 				end
 
 				init_state(target)
-			end
-		else
-			state.targets.each do |target|
-				init_state(target)
-			end
+			end		
 		end
 	end
 
