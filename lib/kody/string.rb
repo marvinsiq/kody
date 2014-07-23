@@ -30,6 +30,18 @@ class String
     downcase    
   end
 
+  def to_property_key
+    self.
+    gsub(/([A-Z]+)([A-Z][a-z])/,'\1.\2').
+    gsub(/([a-z\d])([A-Z])/,'\1.\2').
+    gsub(/([A-Z\d])([A-Z])/,'\1.\2').
+    gsub(/([A-Z\d])([A-Z])/,'\1.\2').
+    tr(" ", ".").
+    tr("_", ".").
+    tr("-", ".").
+    downcase    
+  end  
+
   def camel_case
       return self.clone if self !~ /_/ && self !~ / / && self =~ /[A-Z]+.*/
       split('_').map{|e| e.capitalize}.join.

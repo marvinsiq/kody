@@ -8,16 +8,25 @@ class FieldBuilder
 	def initialize(parameter)
 		@name = parameter.name.camel_case
 		@type = "text"
+		@columns = Array.new
+		@is_table = false
+
 		parameter.tagged_values.each do |tagged_value|
 
-		case tagged_value.name 
-		when "@andromda.presentation.web.view.field.size"
-			@size = tagged_value.value
-		when "@andromda.presentation.web.view.field.size"
-			@type = tagged_value.value
-		end
+			case tagged_value.name 
+			when "@andromda.presentation.web.view.field.size"
+				@size = tagged_value.value
+			when "@andromda.presentation.web.view.field.type"
+				@type = tagged_value.value
+			when "@andromda.presentation.view.table.columns"
+				if !tagged_value.value.empty?
+					@columns = tagged_value.value.split(",")
+				end
+			when "@andromda.presentation.view.table"
+				@is_table = tagged_value.value	
+			end
 
-		end
+		end		
 	end
 
 	def <=>(obj)
@@ -37,7 +46,9 @@ class FieldBuilder
 	  {
 	  	'name'=> @name,
 	  	'type'=> @type,
-	  	'size'=> @size
+	  	'size'=> @size,
+	  	'columns' => @columns,
+	  	'is_table' => @is_table	  	
 	  }
 	end
 end

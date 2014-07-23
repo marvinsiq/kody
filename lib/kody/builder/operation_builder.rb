@@ -13,7 +13,7 @@ class OperationBuilder < Builder
 		@engine = engine
 		
 		@visibility = "public" #operation.visibility
-		@return_type = "void"
+		@return_type = "String"
 
 		@imports = Array.new
 

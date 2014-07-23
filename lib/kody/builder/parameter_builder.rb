@@ -31,7 +31,7 @@ class ParameterBuilder
 					type_enum = "integer"
 				end
 			end
-		end
+		end	
 	end
 
 	def <=>(obj)
@@ -39,7 +39,6 @@ class ParameterBuilder
 	end
 
 	def ==(obj)
-		puts "Passou aqui comparando #{obj}"
 		return false if obj.nil?
 		if String == obj.class
 			@name == obj
