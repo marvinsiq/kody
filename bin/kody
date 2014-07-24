@@ -15,14 +15,15 @@ class KodyRunner < Thor
 	method_option :framework_version, :type => :string, :required => false, :default => "2.4.0", :aliases => '-v', :banner => "The version of framework."
 	method_option :project_name, :type => :string, :required => false, :aliases => '-n', :banner => "The name of your project."
 	method_option :project_group, :type => :string, :required => false, :aliases => '-g', :banner => "The group name of your project."
+	method_option :artifact_id, :type => :string, :required => false, :aliases => '-a'
 	def c
 		begin
 
 			opt = Hash.new			
 			if options[:project_type].nil?
-				print "Generating project in Interactive mode"				
-				print "\t1: Java (demoiselle-minimal)\n"
-				print "\t2: Java (demoiselle-jsf-jpa)\n"
+				print "Generating project in Interactive mode.\n"				
+				print "\t1: Java (demoiselle-minimal);\n"
+				print "\t2: Java (demoiselle-jsf-jpa);\n"
 				print "Choose the type of project: "
 
 				begin
@@ -57,6 +58,13 @@ class KodyRunner < Thor
 				opt[:project_group] = STDIN.gets.sub("\n","")
 			else
 				opt[:project_group] = options[:project_group]				
+			end
+
+			if options[:artifact_id].nil?
+				print "Artifact Id: "
+				opt[:artifact_id] = STDIN.gets.sub("\n","")
+			else
+				opt[:artifact_id] = options[:artifact_id]				
 			end
 
 			opt[:framework_version] = options[:framework_version]

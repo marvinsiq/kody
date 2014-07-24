@@ -39,7 +39,7 @@ class Demoiselle < Engine
 	def properties=(properties)
 		@properties = properties
 		unless(@properties.nil?)
-			@project_files = "#{@output}"
+			@project_files = "#{@output}/#{project_name}"
 
 			@properties.each do |key, value|
 				# Mapeando as propriedades do arquivo kody.properties nos templates.
@@ -72,9 +72,9 @@ class Demoiselle < Engine
 	# Cria um novo projeto
 	def create_project(params)
 
-		#TODO: validar se o projeto existe
-		create_maven_project(params)
+		#TODO: validar se o projeto existe		
 		create_dirs(params)
+		create_maven_project(params)
 		create_properties_file(params)		
 
 		App.logger.info "Project #{params[:project_name]} created."		
@@ -329,15 +329,22 @@ class Demoiselle < Engine
 				template = load_template("page.tpl")
 				@rendered = template.render(@hash)
 
-				path = "#{@project_files}/src/main/webapp/"
+				path = "#{@project_files}/src/main/webapp"
 				file_name = page.name.hyphenate + ".xhtml"
-				save(@rendered, path, file_name)				
+				save(@rendered, path, file_name)
+
+				page.fields.each do |field|
+					puts "#{field.property_key}=#{field.property_value}"
+				end
 			end
 
 			use_case.controllers.each do |controller|
 				App.logger.info "Managed Bean:" + controller.name
 
-				controller.package = properties["project.group"] + "." + properties["project.name"] + ".view" 
+				controller.package = @properties["project.view.package"]
+				if controller.package.nil? or controller.package.empty?
+					controller.package = properties["project.group"] + ".view" 
+				end
 
 				@hash['controller'] = controller
 				template = load_template("controller.tpl")
@@ -372,8 +379,9 @@ class Demoiselle < Engine
 		params.each do |propertie, value|			
 			properties[propertie.to_s.gsub("_", ".")] = value
 		end
-		properties["project.persistence.package"] = "#{project_group}.#{project_name}.persistence"
-		properties["project.business.package"] = "#{project_group}.#{project_name}.business"		
+		properties["project.persistence.package"] = "#{project_group}.persistence"
+		properties["project.business.package"] = "#{project_group}.business"
+		properties["project.view.package"] = "#{project_group}.view"
 		Properties.create(path, properties)
 	end
 
@@ -383,16 +391,17 @@ class Demoiselle < Engine
 	def create_maven_project(params)
 		project_name = params[:project_name]
 		project_group = params[:project_group]
+		artifact_id = params[:artifact_id]
 		version = params[:framework_version]
-		artifact_id = params[:project_type]
+		archetype_artifact_id = params[:project_type]		
 
-		#@project_files = "#{@output}/#{project_name}/project"
-		@project_files = @output
+		@project_files = "#{@output}/#{project_name}"
+		#@project_files = @output
 		Dir.chdir(@project_files)
 
-		command = "mvn archetype:generate -DgroupId=#{project_group}.#{project_name} -DartifactId=#{project_name}"
+		command = "mvn archetype:generate -DgroupId=#{project_group} -DartifactId=#{artifact_id}"
 		command = "#{command} -DarchetypeGroupId=br.gov.frameworkdemoiselle.archetypes"
-		command = "#{command} -DarchetypeArtifactId=#{artifact_id}"
+		command = "#{command} -DarchetypeArtifactId=#{archetype_artifact_id}"
 		command = "#{command} -DarchetypeVersion=#{version} -DinteractiveMode=false"
 		
 		App.logger.info "Criando projeto maven..."

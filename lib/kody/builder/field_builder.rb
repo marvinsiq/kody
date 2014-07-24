@@ -1,14 +1,16 @@
 
 class FieldBuilder
 	
-	attr_accessor :name
 	attr_accessor :type
 	attr_accessor :size
 	attr_accessor :columns
 	attr_accessor :actions
+	attr_accessor :property_key
+	attr_accessor :property_value
 
-	def initialize(parameter)
-		@name = parameter.name.camel_case.uncapitalize
+	def initialize(parameter, page)
+		@page = page
+		self.name = parameter.name.camel_case.uncapitalize
 		@type = "text"
 		
 		@columns = Array.new
@@ -34,6 +36,16 @@ class FieldBuilder
 		end		
 	end
 
+	def name=(name)		
+		@name = name
+		@property_key = @page.name.property_key + ".label." + @name.property_key		
+		@property_value = @name.capitalize_all
+	end
+
+	def name
+		@name
+	end	
+
 	def <=>(obj)
     	@name <=> obj.name
 	end
@@ -50,11 +62,12 @@ class FieldBuilder
 	def to_liquid
 	  {
 	  	'actions' => @actions,
-	  	'name'=> @name,
+	  	'name'=> name,
 	  	'type'=> @type,
 	  	'size'=> @size,
 	  	'columns' => @columns,
-	  	'is_table' => @is_table	  	
+	  	'is_table' => @is_table,
+	  	'property_key'	 => @property_key
 	  }
 	end
 end

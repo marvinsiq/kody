@@ -20,6 +20,8 @@ class OperationBuilder < Builder
 		@imports = Array.new
 		@parameters = Array.new
 
+		@content = ""
+
 		return if operation.nil?
 		@name = operation.name.camel_case.uncapitalize
 	end	

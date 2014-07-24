@@ -20,7 +20,7 @@ public class {{controller.name}} extends AbstractPageBean {
 	}
 	{% endfor %}{% for operation in controller.operations %}
 	{{operation.visibility}} {{operation.return_type}} {{operation.name}}() {
-		return "";
+		{{operation.content}}
 	}
 	{% endfor %}
 }

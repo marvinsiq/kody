@@ -33,13 +33,17 @@ class UseCaseBuilder < Builder
 	  }
 	end
 
-
 	private
+
+	def generate_page_name(state)
+		return @name.camel_case.capitalize_first + state.name.camel_case.capitalize_first
+	end
+
 	def init_state(state)
 		
 		if state.stereotypes.include? "org.andromda.profile::presentation::FrontEndView"
 
-			name = @name.camel_case.capitalize_first + state.name.camel_case.capitalize_first
+			name = generate_page_name(state)
 
 			page = PageBuilder.new
 			@pages << page
@@ -56,7 +60,7 @@ class UseCaseBuilder < Builder
 				if !from_transition.trigger.nil?				
 					from_transition.trigger.parameters.each do |parameter|
 
-						field = FieldBuilder.new(parameter)
+						field = FieldBuilder.new(parameter, page)
 						parameter = ParameterBuilder.new(parameter, @engine)
 													
 						controller.parameters << parameter unless controller.parameters.include? parameter
@@ -65,7 +69,7 @@ class UseCaseBuilder < Builder
 				end			
 			end
 
-			# Itera sobre os actions e as transições para pegar os parâmetros e métodos
+			# Itera sobre as transições para pegar os parâmetros e métodos
 			state.transitions.each do |transition|
 
 				target = transition.target
@@ -89,6 +93,16 @@ class UseCaseBuilder < Builder
 				# Se a transição possui uma trigger (signal, call)
 				if !transition.trigger.nil?
 
+					# Se o próximo state da FrontendView possuir apenas uma transição, este state será a página que será redirecionada
+					operation_return = nil
+					if target.is_final_state?
+						# TODO: Pegar o nome da primeira FrontendView do próximo caso de uso
+						operation_return = "\"" + target.name.hyphenate + "\""
+					end					
+					if operation_return.nil? && target.targets.size == 1						
+						operation_return = "\"" + generate_page_name(target.targets[0]).hyphenate + "\""
+					end				
+
 					# Se o Action state possui um deferrable_event, ou seja, está ligado a um método de uma classe
 					if target.is_action_state? && !target.deferrable_event.nil? && !target.deferrable_event.operation.nil?
 						operation = OperationBuilder.new(target.deferrable_event.operation, @engine)
@@ -96,6 +110,8 @@ class UseCaseBuilder < Builder
 						operation = OperationBuilder.new
 						operation.name = transition.trigger.name.camel_case.uncapitalize
 					end
+					operation_return = "\"\"" if operation_return.nil?
+					operation.content = "return #{operation_return};"
 					
 					controller.operations << operation
 
@@ -107,7 +123,7 @@ class UseCaseBuilder < Builder
 
 						# Se a tela não possui uma tabela o parâmetro será um campo
 						if tablelink.nil?
-							field = FieldBuilder.new(p)
+							field = FieldBuilder.new(p, page)
 							page.fields << field unless page.fields.include? field
 						
 						# Caso contrário o parâmetro será um parâmetro da action que passará para a próxima view

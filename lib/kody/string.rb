@@ -5,6 +5,16 @@ class String
     self[0].upcase + self[1..-1]
   end
 
+  def capitalize_all
+    self.
+      gsub(/([a-z\d])([A-Z])/,'\1 \2').
+      gsub(/([A-Z\d])([A-Z])/,'\1 \2').
+      gsub(/([A-Z\d])([A-Z])/,'\1 \2').
+      tr("_", " ").
+      tr("-", " ").
+      split(" ").each {|a| a.capitalize!}.join(" ")
+  end
+
   def uncapitalize
     self[0].downcase + self[1..-1]
   end  
@@ -30,7 +40,7 @@ class String
     downcase    
   end
 
-  def to_property_key
+  def property_key
     self.
     gsub(/([A-Z]+)([A-Z][a-z])/,'\1.\2').
     gsub(/([a-z\d])([A-Z])/,'\1.\2').
