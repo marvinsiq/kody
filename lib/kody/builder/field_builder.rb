@@ -4,11 +4,16 @@ class FieldBuilder
 	attr_accessor :name
 	attr_accessor :type
 	attr_accessor :size
+	attr_accessor :columns
+	attr_accessor :actions
 
 	def initialize(parameter)
-		@name = parameter.name.camel_case
+		@name = parameter.name.camel_case.uncapitalize
 		@type = "text"
+		
 		@columns = Array.new
+		@actions = Array.new
+
 		@is_table = false
 
 		parameter.tagged_values.each do |tagged_value|
@@ -44,6 +49,7 @@ class FieldBuilder
 
 	def to_liquid
 	  {
+	  	'actions' => @actions,
 	  	'name'=> @name,
 	  	'type'=> @type,
 	  	'size'=> @size,
