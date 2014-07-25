@@ -14,9 +14,12 @@ class Kody
 		@options = options
 	end
 
-	def from_xmi_file(file)
+	def from_xmi_file(files)
+		@models = Array.new
 		init_properties
-		@model = Model.new file
+		files.each do |file|
+			@models << Model.new(file)
+		end		
 	end
 
 	def engine(type, version)
@@ -24,7 +27,7 @@ class Kody
 		case type 
 		when "demoiselle-minimal"
 		when "demoiselle-jsf-jpa"
-			@engine = Demoiselle.new(@model, @properties)
+			@engine = Demoiselle.new(@models, @properties)
 			@engine.output = Dir.pwd		
 		else
 			raise "Engine '#{type}' not supported."
@@ -57,9 +60,9 @@ class Kody
 
 	def generate2(model_file, template, classes, output)
 		
-		@model = Model.new model_file
+		@model = [Model.new(model_file)]
 
-		@engine = GenericEngine.new(@model, @properties)
+		@engine = GenericEngine.new(@models, @properties)
 		@engine.output = Dir.pwd
 		App.logger.info "Using '#{@engine.name}' engine, version #{@engine.version}."
 		
@@ -77,7 +80,7 @@ class Kody
 		properties_filename = "#{App.specification.name}.properties"
 		properties_path = "#{Dir.pwd}/#{properties_filename}"
 		App.logger.info "Loading project property file #{properties_filename}..."
-		
+
 		@properties = Properties.load(properties_path) if @properties.nil?
 	end
 

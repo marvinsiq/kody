@@ -94,8 +94,12 @@ class UseCaseBuilder < Builder
 
 				if !tablelink.nil?
 					# Busca o field com esse nome
-					index = page.fields.index tablelink
-					field_tablelink = page.fields[index]
+					index = page.fields.index(tablelink)
+					if index.nil?
+						App.logger.warn "Não encontrou o campo '#{tablelink}' definido como uma tabela na página '#{page.name}'."
+					else
+						field_tablelink = page.fields[index]
+					end
 				end
 
 				# Se a transição possui uma trigger (signal, call)
@@ -141,7 +145,7 @@ class UseCaseBuilder < Builder
 					end
 
 					# Se não possui uma tabela a operação será um botão na página
-					if tablelink.nil?
+					if tablelink.nil? || (!tablelink.nil? && field_tablelink.nil?)
 						page.actions << operation
 					else
 						# se possui uma tabela, a ação será um botão para cada item da tabela

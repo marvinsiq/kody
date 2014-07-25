@@ -13,31 +13,35 @@ require 'kody/engine/demoiselle/datatype'
 class Demoiselle < Engine
 
 	attr_accessor :output
-	attr_accessor :model
+	attr_accessor :models
 
-	def initialize(model=nil)
+	def initialize(models=nil)
+		super()
 		@output = Dir.pwd
 		@hash = Hash.new	
 
-		@model = model
-		if !model.nil?
+		@models = models
+		if !models.nil?
 
 			properties_filename = "#{App.specification.name}.properties"
 			properties_path = "#{@output}/#{properties_filename}"
 			App.logger.info "Loading project property file #{properties_filename}..."
 
 			self.properties = Properties.load(properties_path)
-			initialize_builders			
+			App.logger.info "Initializing builders..."
+			models.each {|model| initialize_builders(model) }			
 		end
 	end
 
-	def initialize(model, _properties)
+	def initialize(models, _properties)
+		super()
 		@output = Dir.pwd
 		@hash = Hash.new	
 		self.properties = _properties
-		@model = model
-		if !model.nil?
-			initialize_builders			
+		@models = models
+		if !models.nil?
+			App.logger.info "Initializing builders..."
+			models.each {|model| initialize_builders(model) }
 		end		
 	end
 
@@ -341,6 +345,7 @@ class Demoiselle < Engine
 				file_name = page.name.hyphenate + ".xhtml"
 				save(@rendered, path, file_name)
 
+				messages_properties[page.property_key] = page.property_value
 				page.fields.each do |field|
 					messages_properties[field.property_key] = field.property_value
 					field.columns.each do |column|

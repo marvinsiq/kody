@@ -4,6 +4,7 @@
 
 	<ui:define name="body">
 		<h:form>
+			<h1>#{messages['{{page.property_key}}']}</h1>
 			<h:panelGrid id="fields" columns="3">
 {% for field in page.fields %}{% if field.is_table != 'true' %}
 			<p:outputLabel value="#{messages['{{field.property_key}}']}" for="{{field.name}}" styleClass="text-input" />

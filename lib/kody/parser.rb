@@ -2,7 +2,7 @@
 class Parser
 
 	def initialize(engine)
-		@model = engine.model
+		@models = engine.models
 		@engine = engine
 	end
 

@@ -10,6 +10,13 @@ require 'kody/engine/demoiselle/datatype'
 
 class Engine
 
+	def initialize
+		@classes = Array.new
+		@entities = Array.new
+		@enumerations = Array.new
+		@use_cases = Array.new
+	end
+
 	def save(content, path, file_name = nil, overwrite = true)
 		
 		if (file_name.nil?)	
@@ -48,27 +55,21 @@ class Engine
 	end
 
 	protected
-	def initialize_builders
-		App.logger.info "Initializing builders..."
+	def initialize_builders(model)		
 
-		@classes = Array.new
-		@entities = Array.new
-		@enumerations = Array.new
-		@use_cases = Array.new
-
-		@model.classes.each do |clazz|
+		model.classes.each do |clazz|
 			initialize_class(clazz)
 		end
 
-		@model.enumerations.each do |enumeration|
+		model.enumerations.each do |enumeration|
 			initialize_enumeration(enumeration)
 		end
 
-		@model.use_cases.each do |use_case|
+		model.use_cases.each do |use_case|
 			initialize_use_cases(use_case)
 		end		
 
-		App.logger.info "Builders initialized"
+		App.logger.info "Builders initialized for model '#{model.model_file_name}'"
 	end
 
 	##

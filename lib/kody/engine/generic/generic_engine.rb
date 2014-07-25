@@ -14,29 +14,31 @@ class GenericEngine < Engine
 	attr_accessor :model
 	attr_accessor :properties
 
-	def initialize(model=nil)
+	def initialize(models=nil)
+		super()
 		@output = Dir.pwd
 		@hash = Hash.new	
 
-		@model = model
+		@models = models
 		if !model.nil?
 
 			properties_filename = "#{App.specification.name}.properties"
 			properties_path = "#{@output}/#{properties_filename}"
 			App.logger.info "Loading project property file #{properties_filename}..."
-			
+
 			@properties = Properties.load(properties_path)
-			initialize_builders			
+			models.each {|model| initialize_builders(model) }			
 		end
 	end
 
-	def initialize(model, properties)
+	def initialize(models, properties)
+		super()
 		@output = Dir.pwd
 		@hash = Hash.new	
 		@properties = properties
-		@model = model
+		@models = models
 		if !model.nil?
-			initialize_builders			
+			models.each {|model| initialize_builders(model) }			
 		end		
 	end
 
