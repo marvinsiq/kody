@@ -4,11 +4,12 @@ require 'kody/builder/builder'
 
 class OperationBuilder < Builder
 
-	attr_accessor :name	
 	attr_accessor :return_type
 	attr_accessor :visibility
 	attr_accessor :parameters
 	attr_accessor :content
+	attr_accessor :property_key
+	attr_accessor :property_value	
 
 	def initialize(operation=nil, engine=nil)
 	
@@ -23,7 +24,17 @@ class OperationBuilder < Builder
 		@content = ""
 
 		return if operation.nil?
-		@name = operation.name.camel_case.uncapitalize
+		self.name = operation.name.camel_case.uncapitalize
+	end
+
+	def name=(name)		
+		@name = name
+		@property_key = @name.property_key		
+		@property_value = @name.capitalize_all
+	end
+
+	def name
+		@name
 	end	
 
 	def to_liquid
@@ -31,7 +42,8 @@ class OperationBuilder < Builder
 	  	'name'=> @name,
 	  	'return_type' => @return_type,
 	  	'visibility' => @visibility,
-	  	'content' => @content
+	  	'content' => @content,
+	  	'property_key' => @property_key
 	  }
 	end
 

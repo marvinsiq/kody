@@ -2,16 +2,10 @@
 
 class Properties
 
-	def self.load(project_path)
-
-		properties_filename = "#{App.specification.name}.properties"
-		properties_path = "#{project_path}/#{properties_filename}"
-
-		raise "Arquivo de propriedades do projeto não existe (#{properties_filename})." unless File.exists? properties_path
-
-		App.logger.info "Loading project property file #{properties_filename}..."
-
+	def self.load(properties_path)
+		raise "Arquivo de propriedades não existe (#{properties_path})." unless File.exists? properties_path
 	    properties = {}
+	    linha_em_branco = 1
 	    File.open(properties_path, 'r') do |properties_file|
 	      properties_file.read.each_line do |line|
 	        line.strip!
@@ -20,12 +14,26 @@ class Properties
 	          if (i)
 	            properties[line[0..i - 1].strip] = line[i + 1..-1].strip
 	          else
-	            properties[line] = ''
+	            properties["#" + linha_em_branco.to_s] = ''
+	            linha_em_branco = linha_em_branco + 1
 	          end
 	        end
 	      end
 	    end
 	    properties
+	end
+
+	def self.save(properties, properties_path)
+		File.open(properties_path, 'w') do |f|
+			properties.each do |key, value|
+				if value.empty? && key[0] == "#"
+					f.puts "\n"
+				else
+					f.puts "#{key}=#{value}\n"
+				end
+			end
+		end
+		App.logger.info "Arquivo de propriedades salvo em #{properties_path}"
 	end
 
 	def self.create(project_path, content)

@@ -21,7 +21,12 @@ class Demoiselle < Engine
 
 		@model = model
 		if !model.nil?
-			self.properties = Properties.load(@output)
+
+			properties_filename = "#{App.specification.name}.properties"
+			properties_path = "#{@output}/#{properties_filename}"
+			App.logger.info "Loading project property file #{properties_filename}..."
+
+			self.properties = Properties.load(properties_path)
 			initialize_builders			
 		end
 	end
@@ -322,6 +327,9 @@ class Demoiselle < Engine
 
 			App.logger.info "Use Case: " + use_case.name
 
+			messages_properties_file_name = "#{@project_files}/src/main/resources/messages.properties"
+			messages_properties = Properties.load(messages_properties_file_name)
+
 			use_case.pages.each do |page|
 				App.logger.info "Page: " + page.name
 
@@ -334,9 +342,19 @@ class Demoiselle < Engine
 				save(@rendered, path, file_name)
 
 				page.fields.each do |field|
-					puts "#{field.property_key}=#{field.property_value}"
+					messages_properties[field.property_key] = field.property_value
+					field.columns.each do |column|
+						messages_properties[column.property_key] = column.property_value
+					end
+					field.actions.each do |action|
+						messages_properties["#{field.property_key}.#{action.property_key}"] = action.property_value
+					end
 				end
+				page.actions.each do |action|
+					messages_properties["#{page.property_key}.#{action.property_key}"] = action.property_value
+				end				
 			end
+			Properties.save(messages_properties, messages_properties_file_name)
 
 			use_case.controllers.each do |controller|
 				App.logger.info "Managed Bean:" + controller.name

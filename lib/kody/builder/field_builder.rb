@@ -1,3 +1,7 @@
+# encoding: utf-8
+
+require 'kody/builder/builder'
+require 'kody/builder/column_builder'
 
 class FieldBuilder
 	
@@ -27,7 +31,10 @@ class FieldBuilder
 				@type = tagged_value.value
 			when "@andromda.presentation.view.table.columns"
 				if !tagged_value.value.empty?
-					@columns = tagged_value.value.split(",")
+					columns = tagged_value.value.split(",")
+					columns.each do |column|
+						@columns << ColumnBuilder.new(column, self)
+					end
 				end
 			when "@andromda.presentation.view.table"
 				@is_table = tagged_value.value	
@@ -38,7 +45,7 @@ class FieldBuilder
 
 	def name=(name)		
 		@name = name
-		@property_key = @page.name.property_key + ".label." + @name.property_key		
+		@property_key = @page.name.property_key + "." + @name.property_key		
 		@property_value = @name.capitalize_all
 	end
 

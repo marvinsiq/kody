@@ -20,7 +20,12 @@ class GenericEngine < Engine
 
 		@model = model
 		if !model.nil?
-			@properties = Properties.load(@output)
+
+			properties_filename = "#{App.specification.name}.properties"
+			properties_path = "#{@output}/#{properties_filename}"
+			App.logger.info "Loading project property file #{properties_filename}..."
+			
+			@properties = Properties.load(properties_path)
 			initialize_builders			
 		end
 	end

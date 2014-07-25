@@ -72,8 +72,13 @@ class Kody
 
 	private
 
-	def init_properties		
-		@properties = Properties.load(Dir.pwd) if @properties.nil?
+	def init_properties
+
+		properties_filename = "#{App.specification.name}.properties"
+		properties_path = "#{Dir.pwd}/#{properties_filename}"
+		App.logger.info "Loading project property file #{properties_filename}..."
+		
+		@properties = Properties.load(properties_path) if @properties.nil?
 	end
 
 end

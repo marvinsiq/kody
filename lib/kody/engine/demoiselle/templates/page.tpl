@@ -15,16 +15,16 @@
 				<f:facet name="header">#{messages['{{field.property_key}}']}</f:facet>
 				{% for column in field.columns %}
 				<p:column>
-					<f:facet name="header">#{messages['{{page.name | property_key}}.{{field.name | property_key}}.{{column | property_key}}']}</f:facet>
-					<h:outputText value="#{bean.{{column}}}" />
+					<f:facet name="header">#{messages['{{column.property_key}}']}</f:facet>
+					<h:outputText value="#{bean.{{column.name}}}" />
 				</p:column>{% endfor %}
 {% for action in field.actions %}
 				<p:column>
-					<p:commandButton value="#{messages['{{page.name | property_key}}.action.{{action.name | property_key}}']}" action="#{ {{page.controller.name | uncapitalize}}.{{action.name}} }" />
+					<p:commandButton value="#{messages['{{field.property_key}}.{{action.property_key}}']}" action="#{ {{page.controller.name | uncapitalize}}.{{action.name}} }" />
 				</p:column>{% endfor %}
 			</p:dataTable>{% endif %}{% endfor %}			
 {% for action in page.actions %}
-			<p:commandButton value="#{messages['{{page.name | property_key}}.action.{{action.name | property_key}}']}" action="#{ {{page.controller.name | uncapitalize}}.{{action.name}} }" />{% endfor %}		
+			<p:commandButton value="#{messages['{{page.property_key}}.{{action.property_key}}']}" action="#{ {{page.controller.name | uncapitalize}}.{{action.name}} }" />{% endfor %}		
 		</h:form>
 	</ui:define>
 </ui:composition>		

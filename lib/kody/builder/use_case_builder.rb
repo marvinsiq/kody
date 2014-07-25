@@ -2,7 +2,7 @@
 
 require 'kody/builder/builder'
 require 'kody/builder/controller_builder'
-require 'kody/builder/column_builder'
+#require 'kody/builder/column_builder'
 require 'kody/builder/field_builder'
 require 'kody/builder/page_builder'
 require 'kody/builder/parameter_builder'
@@ -20,6 +20,7 @@ class UseCaseBuilder < Builder
 		@pages = Array.new
 		@controllers = Array.new
 
+		@index_page = nil
 		use_case.activity_graphs.each do |activity_graph|
 			activity_graph.states.each do |state|
 				init_state(state)
@@ -54,6 +55,13 @@ class UseCaseBuilder < Builder
 			controller.name = name + "MB"
 
 			page.controller = controller
+
+			# Se esta for a primeira página o nome da página e do controle será o nome do caso de uso e não do "state"
+			if @index_page.nil?
+				@index_page = page
+				page.name = @name
+				controller.name = @name + "MB"
+			end			
 
 			# Itera sobre as trnsições de entrada do State para verificar os campos necessários da tela
 			state.from_transitions.each do |from_transition|
@@ -97,10 +105,10 @@ class UseCaseBuilder < Builder
 					operation_return = nil
 					if target.is_final_state?
 						# TODO: Pegar o nome da primeira FrontendView do próximo caso de uso
-						operation_return = "\"" + target.name.hyphenate + "\""
+						operation_return = "\"" + target.name.hyphenate + "?faces-redirect=true\""
 					end					
 					if operation_return.nil? && target.targets.size == 1						
-						operation_return = "\"" + generate_page_name(target.targets[0]).hyphenate + "\""
+						operation_return = "\"" + generate_page_name(target.targets[0]).hyphenate + "?faces-redirect=true\""
 					end				
 
 					# Se o Action state possui um deferrable_event, ou seja, está ligado a um método de uma classe
