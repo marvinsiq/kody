@@ -22,7 +22,14 @@ public enum {{class.name}} {
         return "" + value;
     }{% if class.enum_type != "String" %}
 
-    public {{class.name}} valueOf({{class.enum_type}} value) {
-    	return super.valueOf({{class.name}}.class, value.toString());
+    public static {{class.name}} valueOf({{class.enum_type}} value) {
+    	{{class.name}} {{class.name | uncapitalize}} = null;
+         for ({{class.name}} item : {{class.name}}.values()) {
+             if (item.getValue()==value) {
+            	 {{class.name | uncapitalize}} = item;
+                 break;
+             }
+         }
+         return {{class.name | uncapitalize}};
     }{% endif %} 
 }{% endif %}

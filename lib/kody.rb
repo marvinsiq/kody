@@ -25,8 +25,7 @@ class Kody
 	def engine(type, version)
 
 		case type 
-		when "demoiselle-minimal"
-		when "demoiselle-jsf-jpa"
+		when "demoiselle-minimal", "demoiselle-jsf-jpa"
 			@engine = Demoiselle.new(@models, @properties)
 			@engine.output = Dir.pwd		
 		else
@@ -38,6 +37,8 @@ class Kody
 	def generate
 		
 		init_properties
+		@properties["module"] = @options[:module]
+
 		engine(@properties["project.type"], @properties["framework.version"])
 		raise "You need define a engine." if @engine.nil?
 		
@@ -56,6 +57,20 @@ class Kody
 		@engine.create_project(params)
 
 		App.logger.info "#{Util.diff_time(@inicio)}"
+	end
+
+	def add_module(params)
+		
+		init_properties
+
+		@properties["module"] = params[:artifact_id]
+
+		engine(params[:project_type], params[:framework_version])
+		raise "You need define a engine." if @engine.nil?
+
+		@engine.add_module(params)
+
+		App.logger.info "#{Util.diff_time(@inicio)}"		
 	end
 
 	def generate2(model_file, template, classes, output)

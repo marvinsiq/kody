@@ -29,8 +29,9 @@ class Demoiselle < Engine
 
 			self.properties = Properties.load(properties_path)
 			App.logger.info "Initializing builders..."
-			models.each {|model| initialize_builders(model) }			
+			models.each {|model| initialize_builders(model) }	
 		end
+		@project_files = @output + "/" + @properties["module"]
 	end
 
 	def initialize(models, _properties)
@@ -42,13 +43,13 @@ class Demoiselle < Engine
 		if !models.nil?
 			App.logger.info "Initializing builders..."
 			models.each {|model| initialize_builders(model) }
-		end		
+		end
+		@project_files = @output + "/" + _properties["module"]	
 	end
 
 	def properties=(properties)
 		@properties = properties
 		unless(@properties.nil?)
-			@project_files = "#{@output}/#{project_name}"
 
 			@properties.each do |key, value|
 				# Mapeando as propriedades do arquivo kody.properties nos templates.
@@ -82,12 +83,20 @@ class Demoiselle < Engine
 	def create_project(params)
 
 		#TODO: validar se o projeto existe		
-		create_dirs(params)
-		create_maven_project(params)
+		create_dirs(params)		
+		create_maven_project(params, @output + "/" + params[:project_name])
 		create_properties_file(params)		
 
 		App.logger.info "Project #{params[:project_name]} created."		
 	end
+
+	# Cria um novo módulo para o projeto
+	def add_module(params)
+
+		create_maven_project(params, @output)
+
+		App.logger.info "Project #{params[:project_name]} created."		
+	end	
 
 	def generate(templates)
 
@@ -101,9 +110,9 @@ class Demoiselle < Engine
 			generate_enumerations
 		end
 		
-		if templates.include?("businnes")
-			App.logger.info "Generating template \"businnes\"."
-			generate_businnes
+		if templates.include?("business")
+			App.logger.info "Generating template \"business\"."
+			generate_business
 		end
 		
 		if templates.include?("persistence")
@@ -142,7 +151,7 @@ class Demoiselle < Engine
 			if clazz.stereotype == :entity
 				template = load_template("entity.tpl")
 				@rendered = template.render(@hash)
-				path = "#{@project_files}/src/main/java/" + clazz.package.gsub(".", "/") + "/"
+				path = "#{@project_files}/src/main/java/" + clazz.package.gsub(".", "/")
 				file_name = clazz.name + ".java"
 				save(@rendered, path, file_name)
 			end
@@ -159,7 +168,7 @@ class Demoiselle < Engine
 			if clazz.stereotype == :enumeration
 				template = load_template("enumeration.tpl")
 				@rendered = template.render(@hash)
-				path = "#{@project_files}/src/main/java/" + clazz.package.gsub(".", "/") + "/"
+				path = "#{@project_files}/src/main/java/" + clazz.package.gsub(".", "/")
 				file_name = clazz.name + ".java"
 				save(@rendered, path, file_name)
 			end				
@@ -169,18 +178,18 @@ class Demoiselle < Engine
 	##
 	# Gera as classes da camada de negócio baseada nas entidades
 	#
-	def generate_businnes
+	def generate_business
 		@entities.each do |clazz|
 
 			if clazz.stereotype == :entity
 				
 				@hash['class'] = clazz
 
-				template = load_template("businnes.tpl")
+				template = load_template("business.tpl")
 				@rendered = template.render(@hash)
 
 				business_package = @properties["project.business.package"]
-				path = "#{@project_files}/src/main/java/" + business_package.gsub(".", "/") + "/"	
+				path = "#{@project_files}/src/main/java/" + business_package.gsub(".", "/")	
 				file_name = clazz.name + "BC.java"
 
 				save(@rendered, path, file_name, false)
@@ -200,7 +209,7 @@ class Demoiselle < Engine
 				@rendered = template.render(@hash)
 
 				persistence_package = @properties["project.persistence.package"];
-				path = "#{@project_files}/src/main/java/" + persistence_package.gsub(".", "/") + "/"	
+				path = "#{@project_files}/src/main/java/" + persistence_package.gsub(".", "/")	
 				file_name = clazz.name + "DAO.java"
 				save(@rendered, path, file_name, false)
 			end		
@@ -411,14 +420,14 @@ class Demoiselle < Engine
 	##
 	# Cria o projeto demoiselle utilizando o arquétipo do maven
 	#
-	def create_maven_project(params)
+	def create_maven_project(params, path)
 		project_name = params[:project_name]
 		project_group = params[:project_group]
 		artifact_id = params[:artifact_id]
 		version = params[:framework_version]
 		archetype_artifact_id = params[:project_type]		
 
-		@project_files = "#{@output}/#{project_name}"
+		@project_files = path
 		#@project_files = @output
 		Dir.chdir(@project_files)
 

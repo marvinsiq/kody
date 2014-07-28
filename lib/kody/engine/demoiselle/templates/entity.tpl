@@ -26,7 +26,7 @@ public class {{class.name}}{% if class.extends != null %} extends {{class.extend
 	private Long id;
 {% endif %}
 {% for attribute in class.attributes %}	{% for annotation in attribute.annotations %}{{annotation}}
-	{% endfor %}private {{attribute.type}} {{attribute.name}};
+	{% endfor %}private {% if attribute.is_enum %}{{attribute.enum_type}}{% else %}{{attribute.type}}{% endif %} {{attribute.name}}{% if attribute.initial_value != "" %} = {{attribute.initial_value}}{% endif %};
 
 {% endfor %}{% for ass in class.relations %} {% for annotation in ass.annotations %}	{{annotation}}
 {% endfor %}	private {{ass.att_type}} {{ass.name}}{{ass.initialize}};
@@ -39,7 +39,7 @@ public class {{class.name}}{% if class.extends != null %} extends {{class.extend
 		this.id = id;
 	}{% endif %}{% for attribute in class.attributes %}
 	{{attribute.visibility}} void set{{attribute.name | capitalize_first}}({{attribute.type | java}} {{attribute.name}}) {
-		this.{{attribute.name}} = {{attribute.name}};
+		{% if attribute.is_enum %}this.{{attribute.name}} = {{attribute.name}}.getValue();{% else %}this.{{attribute.name}} = {{attribute.name}};{% endif %}
 	}
 
 	{{attribute.visibility}} {{class.name}} with{{attribute.name | capitalize_first}}({{attribute.type | java}} {{attribute.name}}) {
@@ -48,7 +48,7 @@ public class {{class.name}}{% if class.extends != null %} extends {{class.extend
 	}	
 
 	{{attribute.anotatios}}{{attribute.visibility}} {{attribute.type | java}} get{{attribute.name | capitalize_first}}() {
-		return this.{{attribute.name}};
+		{% if attribute.is_enum %}return {{attribute.type | java}}.valueOf(this.{{attribute.name}});{% else %}return this.{{attribute.name}};{% endif %}
 	}
 	{% endfor %}{% for ass in class.relations %}
 	{{ass.visibility}} void set{{ass.name | capitalize_first}}({{ass.att_type}} {{ass.name}}) {

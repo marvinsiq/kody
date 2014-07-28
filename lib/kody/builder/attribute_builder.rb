@@ -21,12 +21,18 @@ class AttributeBuilder
 		
 		@multiplicity_range = @attribute.multiplicity_range
 		
+		nullable = ''
+		nullable = ', nullable=false' if @multiplicity_range == [1, 1]
+		
 		@clazz = class_builder.name unless class_builder.nil?
 
-		if @type == "String"
-			@initial_value = "\"#{@attribute.initial_value}\""
-		else
-			@initial_value = "#{@attribute.initial_value}"
+		@initial_value = ""
+		if !@attribute.initial_value.empty?
+			if @type == "String"
+				@initial_value = "\"#{@attribute.initial_value}\""
+			else
+				@initial_value = "#{@attribute.initial_value}"
+			end
 		end
 
 		#@stereotypes = @attribute.stereotypes
@@ -51,33 +57,50 @@ class AttributeBuilder
 			@imports << "javax.persistence.TemporalType"
 		end
 
+		@length = ""
+		@unique = ""
+		@attribute.tagged_values.each do |t|
+		
+			case t.name
+				when "@andromda.persistence.comment"
+					@comment = t.value
+				when "@length", "@andromda.persistence.column.length"
+					@length = ", length=#{t.value}"
+				when "@unique"
+					@unique = ", unique=#{t.value}"
+			end
+		end		
+
 		if @attribute.is_enum?
 
-			type_enum = "varchar"
+			column_definition = ", columnDefinition=\"varchar\""
+
+			@enum_type = "String"
 
 			if !@attribute.enum_obj.nil? && @attribute.enum_obj.attributes.size > 0
 				t =  engine.convert_type(@attribute.enum_obj.attributes[0].type)
+				@enum_type = t
 				if t == "Integer"
-					type_enum = "integer"
+					column_definition = ", columnDefinition=\"integer\""
 				end
 			end
 
-			@annotations << "@Column(name=\"#{column_name}\", columnDefinition=\"#{type_enum}\")"
-			#@annotations << "@Type(type = \"br.gov.mp.siconv.GenericEnumUserType\", parameters = { @Parameter(name = \"enumClass\", value = \"#{@type}\") })"
-			@annotations << "@Enumerated(EnumType.STRING)"
+			# FIXME
+			#column_definition = ""
+
+			@annotations << "@Column(name=\"#{column_name}\"#{nullable}#{@length}#{@unique})"
+
+			#@annotations << "@Column(name=\"#{column_name}\"#{column_definition}#{nullable})"
+			#@annotations << "@Type(type = \"GenericEnumUserType\", parameters = { @Parameter(name = \"enumClass\", value = \"#{@type}\") })"
+			#@annotations << "@Enumerated(EnumType.STRING)"
 
 			#@imports << "org.hibernate.annotations.Parameter"
 			#@imports << "org.hibernate.annotations.Type"	
 
-			@imports << "javax.persistence.EnumType"
-			@imports << "javax.persistence.Enumerated"
+			#@imports << "javax.persistence.EnumType"
+			#@imports << "javax.persistence.Enumerated"
 		else
-			@annotations << "@Column(name=\"#{column_name}\")"
-		end
-
-		@attribute.tagged_values.each do |t|
-			@comment = t.value if "@andromda.persistence.comment" == t.name
-			@length = t.value if "@andromda.persistence.column.length" == t.name
+			@annotations << "@Column(name=\"#{column_name}\"#{nullable}#{@length}#{@unique})"
 		end
 	end
 
@@ -89,7 +112,9 @@ class AttributeBuilder
 	  	'initial_value' => @initial_value,
 	  	'length' => @length,
 	  	'type' => @type,
-	  	'visibility' => 'public'
+	  	'visibility' => 'public',
+	  	'is_enum' => @attribute.is_enum?,
+	  	'enum_type' => @enum_type
 	  }
 	end
 
