@@ -37,7 +37,7 @@ class UseCaseBuilder < Builder
 	private
 
 	def generate_page_name(state)
-		return @name.camel_case.capitalize_first + state.name.camel_case.capitalize_first
+		return @name.removeaccents.camel_case + state.name.removeaccents.camel_case
 	end
 
 	def init_state(state)
@@ -60,7 +60,7 @@ class UseCaseBuilder < Builder
 			if @index_page.nil?
 				@index_page = page
 				page.name = @name
-				controller.name = @name + "MB"
+				controller.name = @name.removeaccents.camel_case + "MB"
 			end			
 
 			# Itera sobre as trnsições de entrada do State para verificar os campos necessários da tela
@@ -120,12 +120,12 @@ class UseCaseBuilder < Builder
 						operation = OperationBuilder.new(target.deferrable_event.operation, @engine)
 					else
 						operation = OperationBuilder.new
-						operation.name = transition.trigger.name.camel_case.uncapitalize
+						operation.name = transition.trigger.name.removeaccents.camel_case.uncapitalize
 					end
 					operation_return = "\"\"" if operation_return.nil?
 					operation.content = "return #{operation_return};"
 					
-					controller.operations << operation
+					controller.operations << operation unless controller.operations.include? operation
 
 					# Itera sobre os parâmetros do método da transição para cria-los na classe de controle e tela
 					transition.trigger.parameters.each do |p|			
@@ -146,10 +146,10 @@ class UseCaseBuilder < Builder
 
 					# Se não possui uma tabela a operação será um botão na página
 					if tablelink.nil? || (!tablelink.nil? && field_tablelink.nil?)
-						page.actions << operation
+						page.actions << operation unless page.actions.include? operation
 					else
 						# se possui uma tabela, a ação será um botão para cada item da tabela
-						field_tablelink.actions << operation
+						field_tablelink.actions << operation unless field_tablelink.actions.include? operation
 					end										
 
 				end

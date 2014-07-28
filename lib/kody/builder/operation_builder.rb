@@ -35,6 +35,19 @@ class OperationBuilder < Builder
 
 	def name
 		@name
+	end
+
+	def <=>(obj)
+    	@name <=> obj.name
+	end
+
+	def ==(obj)
+		return false if obj.nil?
+		if String == obj.class
+			@name == obj
+		else
+    		@name == obj.name
+    	end
 	end	
 
 	def to_liquid

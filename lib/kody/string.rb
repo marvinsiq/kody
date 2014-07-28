@@ -1,3 +1,4 @@
+# encoding: utf-8
 
 class String
   
@@ -53,14 +54,19 @@ class String
   end  
 
   def camel_case
-      return self.clone if self !~ /_/ && self !~ / / && self =~ /[A-Z]+.*/
-      split('_').map{|e| e.capitalize}.join.
-      split(' ').map{|e| e.capitalize}.join
+      self.capitalize_all.tr(" ", "")
   end
 
   def lower_camel_case
       s = self.clone.camel_case
       s[0] = s[0].downcase
       s
+  end 
+  
+  def removeaccents
+    self.tr(
+      "ÀÁÂÃÄÅàáâãäåĀāĂăĄąÇçĆćĈĉĊċČčÐðĎďĐđÈÉÊËèéêëĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħÌÍÎÏìíîïĨĩĪīĬĭĮįİıĴĵĶķĸĹĺĻļĽľĿŀŁłÑñŃńŅņŇňŉŊŋÒÓÔÕÖØòóôõöøŌōŎŏŐőŔŕŖŗŘřŚśŜŝŞşŠšſŢţŤťŦŧÙÚÛÜùúûüŨũŪūŬŭŮůŰűŲųŴŵÝýÿŶŷŸŹźŻżŽž",
+      "AAAAAAaaaaaaAaAaAaCcCcCcCcCcDdDdDdEEEEeeeeEeEeEeEeEeGgGgGgGgHhHhIIIIiiiiIiIiIiIiIiJjKkkLlLlLlLlLlNnNnNnNnnNnOOOOOOooooooOoOoOoRrRrRrSsSsSsSssTtTtTtUUUUuuuuUuUuUuUuUuUuWwYyyYyYZzZzZz")
   end  
+
 end
