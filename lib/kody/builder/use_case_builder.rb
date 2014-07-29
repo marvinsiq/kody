@@ -41,8 +41,8 @@ class UseCaseBuilder < Builder
 	end
 
 	def init_state(state)
-		
-		if state.stereotypes.include? "org.andromda.profile::presentation::FrontEndView"
+	
+		if state.stereotypes.include?("FrontEndView") || state.stereotypes.include?("org.andromda.profile::presentation::FrontEndView")
 
 			name = generate_page_name(state)
 
