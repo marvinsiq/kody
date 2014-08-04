@@ -8,10 +8,14 @@ class ControllerBuilder < Builder
 	attr_accessor :package
 	attr_accessor :operations
 	attr_accessor :parameters
+	attr_accessor :abstract
+	attr_accessor :extends
+	attr_accessor :initial_operation
 
 	def initialize
 		@parameters = Array.new	
 		@operations = Array.new
+		@abstract = false
 	end
 
 	def to_liquid

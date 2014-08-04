@@ -10,6 +10,8 @@ class OperationBuilder < Builder
 	attr_accessor :content
 	attr_accessor :property_key
 	attr_accessor :property_value	
+	attr_accessor :initial
+	attr_accessor :calls
 
 	def initialize(operation=nil, engine=nil)
 	
@@ -20,8 +22,11 @@ class OperationBuilder < Builder
 
 		@imports = Array.new
 		@parameters = Array.new
+		@calls = Array.new
 
 		@content = ""
+
+		@initial = false
 
 		return if operation.nil?
 		self.name = operation.name.camel_case.uncapitalize

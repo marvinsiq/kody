@@ -7,10 +7,12 @@ class ParameterBuilder
 	attr_accessor :name
 	attr_accessor :type
 	attr_accessor :imports
+	attr_accessor :controller
 
-	def initialize(parameter, engine)
+	def initialize(parameter, controller, engine)
 
 		@parameter = parameter
+		@controller = controller
 		@engine = engine
 
 		@imports = Array.new

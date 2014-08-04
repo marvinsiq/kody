@@ -143,7 +143,7 @@ class KodyRunner < Thor
     method_option :model, :type => :array, :required => true, :aliases => '-d', :banner => "Data model."
     method_option :templates, :type => :string, :required => false, :aliases => '-t', :default => "domain business persistence", :banner => "Templates"
     method_option :module, :type => :string, :required => true, :aliases => '-m', :banner => "Module"
-    method_option :debug, :type => :boolean, :required => false, :aliases => '-d', :default => false,:banner => "Debug mode."
+    method_option :debug, :type => :boolean, :required => false, :aliases => '-e', :default => false,:banner => "Show error."
     def g
     	begin
 			kody = Kody.new(options)
